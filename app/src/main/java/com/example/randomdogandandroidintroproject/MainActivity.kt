@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
 
 
@@ -39,6 +40,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable functi
         Text(
             text = "Hello, my name is $name!",
             modifier = modifier
+            modifier = modifier.padding(24.dp) // dp = density-independent pixels
         )
     }
 }
