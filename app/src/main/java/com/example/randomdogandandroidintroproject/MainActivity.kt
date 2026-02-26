@@ -39,7 +39,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable functi
     Surface(color = Color.Cyan) {
         Text(
             text = "Hello, my name is $name!",
-            modifier = modifier
             modifier = modifier.padding(24.dp) // dp = density-independent pixels
         )
     }
