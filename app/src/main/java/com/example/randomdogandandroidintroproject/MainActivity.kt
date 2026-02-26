@@ -47,7 +47,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable functi
     ) {
         Text(
             text = "Hello, my name is $name!",
-            modifier = modifier.padding(24.dp) // dp = density-independent pixels
+            modifier = Modifier.padding(24.dp) // New Modifier for child modifier. dp = density-independent pixels
             // The internal modifier handles content, which is only related to the component.
             // Modifier is universal. Same modifier can be used for multiple elements (e.g. box, column, surface and so on). Common modifiers: padding, margin, size, fillMaxSize, background, border, clickable, shadow, etc.
             // Some modification require a specific parent to work. E.g. .align(Alignment.Center) with Box parent
