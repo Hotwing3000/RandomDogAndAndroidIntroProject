@@ -28,7 +28,8 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
                         name = "SecretName",
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding) // The external modifier handles positioning of the component(s).
+
                     )
                 }
             }
@@ -38,6 +39,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable function names are capitalized. They can't return anything.
+    // "Always" include modifier as a parameter, for it to be reusable. Do not hardcode placement for component.
+    // pass the modifier parameter to the root UI element of the component
     Surface(
         color = Color.Cyan,
         modifier = modifier
@@ -45,6 +48,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable functi
         Text(
             text = "Hello, my name is $name!",
             modifier = modifier.padding(24.dp) // dp = density-independent pixels
+            // The internal modifier handles content, which is only related to the component.
             // Modifier is universal. Same modifier can be used for multiple elements (e.g. box, column, surface and so on). Common modifiers: padding, margin, size, fillMaxSize, background, border, clickable, shadow, etc.
             // Some modification require a specific parent to work. E.g. .align(Alignment.Center) with Box parent
             // The "Text" function (and other (composable) functions) has some of it own "modifications", that cannot be found in the "Modifier". E.g. fontSize, fontWeight, fontFamily, etc.
