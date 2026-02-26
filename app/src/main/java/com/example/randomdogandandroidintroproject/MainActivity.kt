@@ -16,6 +16,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
 
+// You can only use imports which is defined in gradle/libs.versions.toml and app/build.gradle.kts first.
+// Then Gradle handles it, by fetching the libs, and setting the dependency, so the libs can be used in code (write imports first)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +42,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable functi
         Text(
             text = "Hello, my name is $name!",
             modifier = modifier.padding(24.dp) // dp = density-independent pixels
+            // Modifier is universal. Same modifier can be used for multiple elements (e.g. box, column, surface and so on). Common modifiers: padding, margin, size, fillMaxSize, background, border, clickable, shadow, etc.
+            // Some modification require a specific parent to work. E.g. .align(Alignment.Center) with Box parent
+            // The "Text" function (and other (composable) functions) has some of it own "modifications", that cannot be found in the "Modifier". E.g. fontSize, fontWeight, fontFamily, etc.
         )
     }
 }
