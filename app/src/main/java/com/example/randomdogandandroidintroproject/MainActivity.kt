@@ -38,7 +38,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable function names are capitalized. They can't return anything.
-    Surface(color = Color.Cyan) {
+    Surface(
+        color = Color.Cyan,
+        modifier = modifier
+    ) {
         Text(
             text = "Hello, my name is $name!",
             modifier = modifier.padding(24.dp) // dp = density-independent pixels
