@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -26,15 +27,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent { // setContent is a composable function that sets the content of the activity. You can call other composable functions from here.
             RandomDogAndAndroidIntroProjectTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "SecretName",
-                        modifier = Modifier.padding(innerPadding) // The external modifier handles positioning of the component(s).
-
-                    )
-                }
+                MyApp(modifier = Modifier.fillMaxSize())
             }
         }
+    }
+}
+
+@Composable
+fun MyApp(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Greeting("MyAppName")
     }
 }
 
@@ -61,6 +66,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable functi
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        Greeting("SecretName")
+        MyApp()
     }
 }
+
