@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -51,14 +52,23 @@ fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable functi
         color = MaterialTheme.colorScheme.primary,
         modifier = modifier
     ) {
-        Text(
-            text = "Hello, my name is $name!",
-            modifier = Modifier.padding(24.dp) // New Modifier for child modifier. dp = density-independent pixels
-            // The internal modifier handles content, which is only related to the component.
-            // Modifier is universal. Same modifier can be used for multiple elements (e.g. box, column, surface and so on). Common modifiers: padding, margin, size, fillMaxSize, background, border, clickable, shadow, etc.
-            // Some modification require a specific parent to work. E.g. .align(Alignment.Center) with Box parent
-            // The "Text" function (and other (composable) functions) has some of it own "modifications", that cannot be found in the "Modifier". E.g. fontSize, fontWeight, fontFamily, etc.
-        )
+        Column(modifier = Modifier.padding(24.dp)) { // common items like this are Row, Column and Box.
+                                                         // New Modifier for child modifier. dp = density-independent pixels
+            Text(
+                text = "Hello,",
+                // The internal modifier handles content, which is only related to the component.
+                // Modifier is universal. Same modifier can be used for multiple elements (e.g. box, column, surface and so on). Common modifiers: padding, margin, size, fillMaxSize, background, border, clickable, shadow, etc.
+                // Some modification require a specific parent to work. E.g. .align(Alignment.Center) with Box parent
+                // The "Text" function (and other (composable) functions) has some of it own "modifications", that cannot be found in the "Modifier". E.g. fontSize, fontWeight, fontFamily, etc.
+            )
+            Text(
+                text = "my name is"
+            )
+            Text(
+                text = "$name!"
+            )
+        }
+
     }
 }
 
