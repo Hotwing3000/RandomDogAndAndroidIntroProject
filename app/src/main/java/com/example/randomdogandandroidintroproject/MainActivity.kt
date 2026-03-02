@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent { // setContent is a composable function that sets the content of the activity. You can call other composable functions from here.
             RandomDogAndAndroidIntroProjectTheme {
-                MyApp(modifier = Modifier.fillMaxSize())
+                MyApp()
             }
         }
     }
@@ -38,39 +38,25 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp(
     modifier: Modifier = Modifier,
-    names: List<String> = listOf("ColumnUser1", "ColumnUser2", "shortname")
+    names: List<String> = listOf("World", "Compose")
 ) {
-    Surface(
-        modifier = modifier,
-        color = MaterialTheme.colorScheme.primaryContainer
-    ) {
-        Column(modifier = Modifier.padding(vertical = (8/2).dp)) {
-            for (name in names) {
-                Greeting(name = name)
-            }
+    Column(modifier = modifier.padding(vertical = 4.dp)) {
+        for (name in names) {
+            Greeting(name = name)
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable function names are capitalized. They can't return anything.
-    // "Always" include modifier as a parameter, for it to be reusable. Do not hardcode placement for component.
-    // pass the modifier parameter to the root UI element of the component
+fun Greeting(name: String, modifier: Modifier = Modifier) {
     Surface(
         color = MaterialTheme.colorScheme.primary,
-        modifier = modifier.padding(vertical = (8/2).dp, horizontal = 8.dp)
+        modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp).fillMaxWidth()) { // common items like this are Row, Column and Box.
-                                                                        // New Modifier for child modifier. dp = density-independent pixels
-            Text(text = "Hello,")
-                // The internal modifier handles content, which is only related to the component.
-                // Modifier is universal. Same modifier can be used for multiple elements (e.g. box, column, surface and so on). Common modifiers: padding, margin, size, fillMaxSize, background, border, clickable, shadow, etc.
-                // Some modification require a specific parent to work. E.g. .align(Alignment.Center) with Box parent
-                // The "Text" function (and other (composable) functions) has some of it own "modifications", that cannot be found in the "Modifier". E.g. fontSize, fontWeight, fontFamily, etc.
-            Text(text = "my name is")
-            Text(text = "$name!")
+        Column(modifier = Modifier.fillMaxWidth().padding(24.dp)) {
+            Text(text = "Hello ")
+            Text(text = name)
         }
-
     }
 }
 
