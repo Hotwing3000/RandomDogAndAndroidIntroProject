@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -35,12 +36,19 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MyApp(modifier: Modifier = Modifier) {
+fun MyApp(
+    modifier: Modifier = Modifier,
+    names: List<String> = listOf("ColumnUser1", "ColumnUser2", "shortname")
+) {
     Surface(
         modifier = modifier,
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.primaryContainer
     ) {
-        Greeting("MyAppName")
+        Column(modifier = Modifier.padding(vertical = (8/2).dp)) {
+            for (name in names) {
+                Greeting(name = name)
+            }
+        }
     }
 }
 
@@ -50,29 +58,23 @@ fun Greeting(name: String, modifier: Modifier = Modifier) { // Composable functi
     // pass the modifier parameter to the root UI element of the component
     Surface(
         color = MaterialTheme.colorScheme.primary,
-        modifier = modifier
+        modifier = modifier.padding(vertical = (8/2).dp, horizontal = 8.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) { // common items like this are Row, Column and Box.
-                                                         // New Modifier for child modifier. dp = density-independent pixels
-            Text(
-                text = "Hello,",
+        Column(modifier = Modifier.padding(24.dp).fillMaxWidth()) { // common items like this are Row, Column and Box.
+                                                                        // New Modifier for child modifier. dp = density-independent pixels
+            Text(text = "Hello,")
                 // The internal modifier handles content, which is only related to the component.
                 // Modifier is universal. Same modifier can be used for multiple elements (e.g. box, column, surface and so on). Common modifiers: padding, margin, size, fillMaxSize, background, border, clickable, shadow, etc.
                 // Some modification require a specific parent to work. E.g. .align(Alignment.Center) with Box parent
                 // The "Text" function (and other (composable) functions) has some of it own "modifications", that cannot be found in the "Modifier". E.g. fontSize, fontWeight, fontFamily, etc.
-            )
-            Text(
-                text = "my name is"
-            )
-            Text(
-                text = "$name!"
-            )
+            Text(text = "my name is")
+            Text(text = "$name!")
         }
 
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, widthDp = 320, heightDp = 600)
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
