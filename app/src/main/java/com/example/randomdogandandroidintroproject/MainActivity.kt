@@ -32,8 +32,7 @@ import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidI
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent { // setContent is a composable function that sets the content of the activity. You can call other composable functions from here.
+        setContent {
             RandomDogAndAndroidIntroProjectTheme {
                 MyApp(modifier = Modifier.fillMaxSize())
             }
@@ -44,11 +43,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
 
-    var shouldShowOnboarding by remember { mutableStateOf(true) } // single source of truth / hoisting
+    var shouldShowOnboarding by remember { mutableStateOf(true) }
 
     Surface(modifier) {
         if (shouldShowOnboarding) {
-            OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false }) // hoisting to parent
+            OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
         } else {
             Greetings()
         }
@@ -56,39 +55,23 @@ fun MyApp(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun OnboardingScreen(
+    onContinueClicked: () -> Unit,
+    modifier: Modifier = Modifier
+) {
 
-    var expanded by remember { mutableStateOf(false) }
-
-    val extraPadding = if (expanded) 48.dp else 0.dp
-
-
-    Surface(
-        color = MaterialTheme.colorScheme.primary,
-        modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(modifier = Modifier.padding(24.dp)) {
-            Column(modifier = Modifier
-                .weight(1f)
-                .padding(bottom = extraPadding)
-            ) {
-                Text(text = "Hello ")
-                Text(text = name)
-            }
-            ElevatedButton(
-                onClick = { expanded = !expanded }
-            ) {
-                Text(if (expanded) "Show less" else "Show more")
-            }
+        Text("Welcome to the Basics Codelab!")
+        Button(
+            modifier = Modifier.padding(vertical = 24.dp),
+            onClick = onContinueClicked
+        ) {
+            Text("Continue")
         }
-    }
-}
-
-@Preview
-@Composable
-fun MyAppPreview() {
-    RandomDogAndAndroidIntroProjectTheme {
-        MyApp(Modifier.fillMaxSize())
     }
 }
 
@@ -104,40 +87,56 @@ private fun Greetings(
     }
 }
 
-@Preview(showBackground = true, widthDp = 320, heightDp = 400)
-@Composable
-fun GreetingsPreview() {
-    RandomDogAndAndroidIntroProjectTheme {
-        Greetings()
-    }
-}
-
-@Composable
-fun OnboardingScreen(
-    modifier: Modifier = Modifier,
-    onContinueClicked: () -> Unit // hoisting with callback
-) {
-
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Welcome to the Basics Codelab!")
-        Button(
-            modifier = Modifier.padding(vertical = 24.dp),
-            onClick = { onContinueClicked() } // hoisting with callback
-        ) {
-            Text("Continue")
-        }
-    }
-}
-
 @Preview(showBackground = true, widthDp = 320, heightDp = 320)
 @Composable
 fun OnboardingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
         OnboardingScreen(onContinueClicked = {})
+    }
+}
+
+@Composable
+fun Greeting(name: String, modifier: Modifier = Modifier) {
+
+    var expanded by remember { mutableStateOf(false) }
+
+    val extraPadding = if (expanded) 48.dp else 0.dp
+
+    Surface(
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+    ) {
+        Row(modifier = Modifier.padding(24.dp)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(bottom = extraPadding)
+            ) {
+                Text(text = "Hello, ")
+                Text(text = name)
+            }
+            ElevatedButton(
+                onClick = { expanded = !expanded }
+            ) {
+                Text(if (expanded) "Show less" else "Show more")
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 320)
+@Composable
+fun GreetingPreview() {
+    RandomDogAndAndroidIntroProjectTheme {
+        Greetings()
+    }
+}
+
+@Preview
+@Composable
+fun MyAppPreview() {
+    RandomDogAndAndroidIntroProjectTheme {
+        MyApp(Modifier.fillMaxSize())
     }
 }
 
