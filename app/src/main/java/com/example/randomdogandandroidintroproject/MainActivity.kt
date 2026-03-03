@@ -3,6 +3,7 @@ package com.example.randomdogandandroidintroproject
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,13 +19,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.ui.unit.coerceAtLeast
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
 
 
@@ -45,7 +51,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp(modifier: Modifier = Modifier) {
 
-    var shouldShowOnboarding by rememberSaveable() { mutableStateOf(true) }
+    var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
 
     Surface(modifier) {
         if (shouldShowOnboarding) {
@@ -100,19 +106,54 @@ fun OnboardingPreview() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
 
-    var expanded by rememberSaveable() { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
 
-    val extraPadding = if (expanded) 48.dp else 0.dp
+    val extraPadding by animateDpAsState(
+        targetValue = if (expanded) 48.dp else 0.dp,
+        animationSpec = if (expanded) {
+            spring(
+                dampingRatio = Spring.DampingRatioHighBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        } else {
+            tween(durationMillis = 300, easing = LinearEasing)
+        }
+    )
+
+    val backgroundColor by animateColorAsState(
+        targetValue = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
+        animationSpec = if (expanded) {
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        } else {
+            tween(durationMillis = 300, easing = LinearEasing)
+        }
+    )
+    // to animate the text color explicitly
+    val contentColor by animateColorAsState(
+        targetValue = if (expanded) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
+        animationSpec = if (expanded) {
+            spring(
+                dampingRatio = Spring.DampingRatioHighBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        } else {
+            tween(durationMillis = 300, easing = LinearEasing)
+        }
+    )
 
     Surface(
-        color = MaterialTheme.colorScheme.primary,
+        color = backgroundColor,
+        contentColor = contentColor,
         modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
     ) {
         Row(modifier = Modifier.padding(24.dp)) {
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(bottom = extraPadding)
+                    .padding(bottom = extraPadding.coerceAtLeast(0.dp)) // Avoid negative dp values
             ) {
                 Text(text = "Hello, ")
                 Text(text = name)
@@ -141,4 +182,3 @@ fun MyAppPreview() {
         MyApp(Modifier.fillMaxSize())
     }
 }
-
