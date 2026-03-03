@@ -30,7 +30,9 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.coerceAtLeast
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
 
 
@@ -156,7 +158,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
                     .padding(bottom = extraPadding.coerceAtLeast(0.dp)) // Avoid negative dp values
             ) {
                 Text(text = "Hello, ")
-                Text(text = name)
+                Text(text = name, style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.ExtraBold
+                ))
             }
             ElevatedButton(
                 onClick = { expanded = !expanded }
@@ -167,9 +171,15 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     }
 }
 
+@Preview(
+    showBackground = true,
+    widthDp = 320,
+    uiMode = UI_MODE_NIGHT_YES,
+    name = "GreetingPreviewDark"
+)
 @Preview(showBackground = true, widthDp = 320)
 @Composable
-fun GreetingPreview() {
+fun GreetingPreviewDarkMode() {
     RandomDogAndAndroidIntroProjectTheme {
         Greetings()
     }
@@ -182,3 +192,7 @@ fun MyAppPreview() {
         MyApp(Modifier.fillMaxSize())
     }
 }
+
+
+
+
