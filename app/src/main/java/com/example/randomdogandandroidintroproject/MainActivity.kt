@@ -66,7 +66,7 @@ fun MyApp(
         if (viewModel.shouldShowOnboarding) {
             OnboardingScreen(onContinueClicked = { viewModel.onContinueClicked() })
         } else {
-            Greetings()
+            Greetings(names = viewModel.names)
         }
     }
 }
