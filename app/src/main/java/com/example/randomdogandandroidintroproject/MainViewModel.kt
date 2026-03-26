@@ -5,13 +5,29 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 
-class MainViewModel(private val repository: NameRepository = NameRepositoryImpl()) : ViewModel() {
+class MainViewModel : ViewModel() {
+    private val numericRepository = NameRepositoryImpl()
+    private val romanRepository = RomanNumeralNameRepository()
+
     var shouldShowOnboarding by mutableStateOf(true)
         private set
 
-    val names: List<String> = repository.getNames()
+    var isRomanMode by mutableStateOf(false)
+        private set
+
+    var names by mutableStateOf(numericRepository.getNames(amount = 100))
+        private set
 
     fun onContinueClicked() {
         shouldShowOnboarding = false
+    }
+
+    fun toggleNamesMode() {
+        isRomanMode = !isRomanMode
+        names = if (isRomanMode) {
+            romanRepository.getNames(amount = 100)
+        } else {
+            numericRepository.getNames(amount = 100)
+        }
     }
 }

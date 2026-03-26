@@ -66,7 +66,15 @@ fun MyApp(
         if (viewModel.shouldShowOnboarding) {
             OnboardingScreen(onContinueClicked = { viewModel.onContinueClicked() })
         } else {
-            Greetings(names = viewModel.names)
+            Column {
+                Button(
+                    modifier = Modifier.padding(16.dp),
+                    onClick = { viewModel.toggleNamesMode() }
+                ) {
+                    Text(if (viewModel.isRomanMode) "Show Numeric" else "Show Roman")
+                }
+                Greetings(names = viewModel.names)
+            }
         }
     }
 }
@@ -95,7 +103,7 @@ fun OnboardingScreen(
 @Composable
 private fun Greetings(
     modifier: Modifier = Modifier,
-    names: List<String> = List(1000) { "$it" }
+    names: List<String>
 ) {
     LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
         items(items = names) { name ->
@@ -195,7 +203,7 @@ private fun CardContent(name: String, expanded: Boolean, onExpandClicked: () -> 
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        Greetings()
+        Greetings(names = listOf("1", "2"))
     }
 }
 
