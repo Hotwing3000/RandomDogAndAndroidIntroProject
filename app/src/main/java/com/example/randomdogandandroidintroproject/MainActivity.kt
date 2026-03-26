@@ -39,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
 
 
@@ -57,13 +58,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MyApp(modifier: Modifier = Modifier) {
-
-    var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
-
+fun MyApp(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel = viewModel()
+) {
     Surface(modifier) {
-        if (shouldShowOnboarding) {
-            OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
+        if (viewModel.shouldShowOnboarding) {
+            OnboardingScreen(onContinueClicked = { viewModel.onContinueClicked() })
         } else {
             Greetings()
         }
