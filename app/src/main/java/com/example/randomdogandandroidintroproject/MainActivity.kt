@@ -39,12 +39,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
-
+import dagger.hilt.android.AndroidEntryPoint
 
 // You can only use imports which is defined in gradle/libs.versions.toml and app/build.gradle.kts first.
 // Then Gradle handles it, by fetching the libs, and setting the dependency, so the libs can be used in code (write imports first)
 
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,15 +60,23 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MyApp(modifier: Modifier = Modifier) {
-
-    var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
-
+fun MyApp(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel = hiltViewModel()
+) {
     Surface(modifier) {
-        if (shouldShowOnboarding) {
-            OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
+        if (viewModel.shouldShowOnboarding) {
+            OnboardingScreen(onContinueClicked = { viewModel.onContinueClicked() })
         } else {
-            Greetings()
+            Column {
+                Button(
+                    modifier = Modifier.padding(16.dp),
+                    onClick = { viewModel.toggleNamesMode() }
+                ) {
+                    Text(if (viewModel.isRomanMode) "Show Numeric" else "Show Roman")
+                }
+                Greetings(names = viewModel.names)
+            }
         }
     }
 }
@@ -94,7 +105,7 @@ fun OnboardingScreen(
 @Composable
 private fun Greetings(
     modifier: Modifier = Modifier,
-    names: List<String> = List(1000) { "$it" }
+    names: List<String>
 ) {
     LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
         items(items = names) { name ->
@@ -194,7 +205,7 @@ private fun CardContent(name: String, expanded: Boolean, onExpandClicked: () -> 
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        Greetings()
+        Greetings(names = listOf("1", "2"))
     }
 }
 
