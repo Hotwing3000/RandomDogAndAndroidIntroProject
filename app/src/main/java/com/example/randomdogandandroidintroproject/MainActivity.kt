@@ -41,11 +41,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
+import dagger.hilt.android.AndroidEntryPoint
 
-
-// You can only use imports which is defined in gradle/libs.versions.toml and app/build.gradle.kts first.
-// Then Gradle handles it, by fetching the libs, and setting the dependency, so the libs can be used in code (write imports first)
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
