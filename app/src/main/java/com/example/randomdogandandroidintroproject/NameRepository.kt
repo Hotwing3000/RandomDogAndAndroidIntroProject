@@ -17,8 +17,19 @@ class RomanNumeralNameRepository @Inject constructor() : NameRepository {
         return List(amount) { toRoman(it + 1) }
     }
 
+    /**
+     * Converts an integer to a Roman numeral string.
+     *
+     * This implementation supports numbers up to 3,999. Numbers larger than 3,999
+     * require vinculum symbols (bars over letters to indicate multiplication by 1,000),
+     * which are not implemented here.
+     *
+     * @param num The integer to convert.
+     * @return The Roman numeral representation, or the original number as a string
+     * if it is outside the supported range (1-3,999).
+     */
     private fun toRoman(num: Int): String {
-        if (num <= 0) return num.toString()
+        if (num <= 0 || num > 3999) return num.toString()
 
         val values = intArrayOf(1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1)
         val symbols = arrayOf("M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I")
