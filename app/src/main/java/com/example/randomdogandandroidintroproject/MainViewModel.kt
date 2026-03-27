@@ -4,10 +4,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import javax.inject.Named
 
-class MainViewModel : ViewModel() {
-    private val numericRepository = NameRepositoryImpl()
-    private val romanRepository = RomanNumeralNameRepository()
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    @Named("numeric") private val numericRepository: NameRepository,
+    @Named("roman") private val romanRepository: NameRepository
+) : ViewModel() {
 
     var shouldShowOnboarding by mutableStateOf(true)
         private set
