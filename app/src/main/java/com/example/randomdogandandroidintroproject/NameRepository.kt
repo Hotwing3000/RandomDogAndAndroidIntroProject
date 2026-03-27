@@ -1,16 +1,18 @@
 package com.example.randomdogandandroidintroproject
 
+import javax.inject.Inject
+
 interface NameRepository {
     fun getNames(amount: Int): List<String>
 }
 
-class NameRepositoryImpl : NameRepository {
+class NameRepositoryImpl @Inject constructor() : NameRepository {
     override fun getNames(amount: Int): List<String> {
         return List(amount) { "${it + 1}" }
     }
 }
 
-class RomanNumeralNameRepository : NameRepository {
+class RomanNumeralNameRepository @Inject constructor() : NameRepository {
     override fun getNames(amount: Int): List<String> {
         return List(amount) { toRoman(it + 1) }
     }
