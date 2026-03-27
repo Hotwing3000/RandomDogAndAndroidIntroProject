@@ -39,9 +39,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+
+// You can only use imports which is defined in gradle/libs.versions.toml and app/build.gradle.kts first.
+// Then Gradle handles it, by fetching the libs, and setting the dependency, so the libs can be used in code (write imports first)
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -58,7 +62,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp(
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel = viewModel()
+    viewModel: MainViewModel = hiltViewModel()
 ) {
     Surface(modifier) {
         if (viewModel.shouldShowOnboarding) {
