@@ -1,20 +1,22 @@
 package com.example.randomdogandandroidintroproject
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 interface NameRepository {
-    fun getNames(amount: Int): List<String>
+    suspend fun getNames(amount: Int): List<String>
 }
 
 class NameRepositoryImpl @Inject constructor() : NameRepository {
-    override fun getNames(amount: Int): List<String> {
-        return List(amount) { "${it + 1}" }
+    override suspend fun getNames(amount: Int): List<String> = withContext(Dispatchers.Default) {
+        List(amount) { "${it + 1}" }
     }
 }
 
 class RomanNumeralNameRepository @Inject constructor() : NameRepository {
-    override fun getNames(amount: Int): List<String> {
-        return List(amount) { toRoman(it + 1) }
+    override suspend fun getNames(amount: Int): List<String> = withContext(Dispatchers.Default) {
+        List(amount) { toRoman(it + 1) }
     }
 
     /**
