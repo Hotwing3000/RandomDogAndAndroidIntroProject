@@ -10,7 +10,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Named
-import kotlin.math.log
 
 
 data class DogItem(
