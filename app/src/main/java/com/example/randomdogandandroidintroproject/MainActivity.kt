@@ -75,13 +75,20 @@ fun MyApp(
             OnboardingScreen(onContinueClicked = { viewModel.onContinueClicked() })
         } else {
             Column {
-                Button(
-                    modifier = Modifier.padding(16.dp),
-                    onClick = { viewModel.toggleNamesMode() }
-                ) {
-                    Text(if (viewModel.isRomanMode) "Show Numeric" else "Show Roman")
+                Row(modifier = Modifier.padding(16.dp)) {
+                    Button(
+                        onClick = { viewModel.toggleNamesMode() }
+                    ) {
+                        Text(if (viewModel.isRomanMode) "Show Numeric" else "Show Roman")
+                    }
+                    Button(
+                        modifier = Modifier.padding(start = 8.dp),
+                        onClick = { viewModel.fetchRandomDog() }
+                    ) {
+                        Text("New Dog")
+                    }
                 }
-                Greetings(names = viewModel.names)
+                Greetings(names = viewModel.names, dogImageUrl = viewModel.dogImageUrl)
             }
         }
     }
@@ -111,17 +118,18 @@ fun OnboardingScreen(
 @Composable
 private fun Greetings(
     modifier: Modifier = Modifier,
-    names: List<String>
+    names: List<String>,
+    dogImageUrl: String?
 ) {
     LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
         items(items = names) { name ->
-            Greeting(name = name)
+            Greeting(name = name, dogImageUrl = dogImageUrl)
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun Greeting(name: String, dogImageUrl: String?, modifier: Modifier = Modifier) {
 
     var expanded by rememberSaveable { mutableStateOf(false) }
 
@@ -157,12 +165,12 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         shape = MaterialTheme.shapes.medium,
         modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
     ) {
-        CardContent(name, expanded, onExpandClicked = { expanded = !expanded })
+        CardContent(name, expanded, dogImageUrl, onExpandClicked = { expanded = !expanded })
     }
 }
 
 @Composable
-private fun CardContent(name: String, expanded: Boolean, onExpandClicked: () -> Unit) {
+private fun CardContent(name: String, expanded: Boolean, dogImageUrl: String?, onExpandClicked: () -> Unit) {
     Row(
         modifier = Modifier
             .padding(24.dp)
@@ -184,8 +192,8 @@ private fun CardContent(name: String, expanded: Boolean, onExpandClicked: () -> 
 
             if (expanded) {
                 AsyncImage(
-                    model = "https://www.humac.dk/sites/default/files/2025-02/2.jpg",
-                    contentDescription = "Apple Logo",
+                    model = dogImageUrl,
+                    contentDescription = "Random Dog Image",
                     modifier = Modifier
                         .padding(top = 16.dp)
                         .fillMaxWidth()
@@ -198,6 +206,7 @@ private fun CardContent(name: String, expanded: Boolean, onExpandClicked: () -> 
                 )
                 Text(
                     text = ("Composem ipsum color sit lazy, padding theme elit, sed do bouncy. ").repeat(4),
+                    modifier = Modifier.padding(top = 16.dp)
                 )
             }
         }
@@ -225,7 +234,7 @@ private fun CardContent(name: String, expanded: Boolean, onExpandClicked: () -> 
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        Greetings(names = listOf("1", "2"))
+        Greetings(names = listOf("1", "2"), dogImageUrl = null)
     }
 }
 
