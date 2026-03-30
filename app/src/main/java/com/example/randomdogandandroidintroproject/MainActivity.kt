@@ -34,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -128,6 +129,14 @@ fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier =
 
     var expanded by rememberSaveable { mutableStateOf(false) }
 
+    // Use LaunchedEffect to automatically fetch the image if the card is expanded
+    // and the image is currently missing (e.g. after a mode toggle).
+    LaunchedEffect(expanded, dogItem.imageUrl) {
+        if (expanded && dogItem.imageUrl == null) {
+            onExpand(dogItem)
+        }
+    }
+
     val backgroundColor by animateColorAsState(
         targetValue = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
         animationSpec = if (expanded) {
@@ -162,10 +171,7 @@ fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier =
         CardContent(
             dogItem = dogItem,
             expanded = expanded,
-            onExpandClicked = {
-                expanded = !expanded
-                if (expanded) onExpand(dogItem)
-            }
+            onExpandClicked = { expanded = !expanded }
         )
     }
 }
@@ -207,7 +213,6 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
                         }
                     )
                 } else {
-                    // Show a local placeholder box while the URL is being fetched from the API
                     Box(
                         modifier = Modifier
                             .padding(top = 16.dp)
@@ -246,7 +251,7 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        Greetings(dogItems = listOf(DogItem("1"), DogItem("2")), onExpand = {})
+        Greetings(dogItems = listOf(DogItem(0, "1"), DogItem(1, "2")), onExpand = {})
     }
 }
 

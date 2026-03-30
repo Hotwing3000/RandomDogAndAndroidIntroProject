@@ -10,8 +10,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Named
+import kotlin.math.log
+
 
 data class DogItem(
+    val index: Int, // Stable ID for the "slot"
     val name: String,
     val imageUrl: String? = null
 )
@@ -32,6 +35,9 @@ class MainViewModel @Inject constructor(
     var dogItems by mutableStateOf<List<DogItem>>(emptyList())
         private set
 
+    // Persistent cache for URLs tied to the index
+    private val imageCache = mutableMapOf<Int, String>()
+
     init {
         loadNames()
     }
@@ -42,13 +48,23 @@ class MainViewModel @Inject constructor(
 
     private fun loadNames() {
         viewModelScope.launch {
+            val amount = 1000
             val names = if (isRomanMode) {
-                romanRepository.getNames(amount = 3)
+                romanRepository.getNames(amount = amount)
             } else {
-                numericRepository.getNames(amount = 3)
+                numericRepository.getNames(amount = amount)
             }
-            // Initialize items without images first
-            dogItems = names.map { DogItem(it) }
+            
+            // Reconstruct the list while preserving cached images
+            dogItems = names.mapIndexed { index, name ->
+                DogItem(
+                    index = index,
+                    name = name,
+                    imageUrl = imageCache[index] // Restore from cache
+
+                )
+            }
+            Log.d("MainViewModel", "${imageCache.size}")
         }
     }
 
@@ -59,17 +75,21 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = dogApiService.getRandomDogImage()
-                Log.d("MainViewModel", "Fetched dog image URL: ${response.message}")
-                // Update the list with the new image URL for this specific item
+                Log.d("MainViewModel", "Fetched dog image URL for index ${item.index}: ${response.message}")
+                
+                // 1. Save to persistent cache
+                imageCache[item.index] = response.message
+                
+                // 2. Update the active UI list
                 dogItems = dogItems.map {
-                    if (it.name == item.name) {
+                    if (it.index == item.index) {
                         it.copy(imageUrl = response.message)
                     } else {
                         it
                     }
                 }
             } catch (e: Exception) {
-                Log.e("MainViewModel", "Error fetching image for ${item.name}", e)
+                Log.e("MainViewModel", "Error fetching image for index ${item.index}", e)
             }
         }
     }
