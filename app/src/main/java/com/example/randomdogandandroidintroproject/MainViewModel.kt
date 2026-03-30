@@ -49,22 +49,26 @@ class MainViewModel @Inject constructor(
             }
             // Initialize items without images first
             dogItems = names.map { DogItem(it) }
-            // Then fetch images for all of them
-            fetchRandomDogs()
         }
     }
 
-    fun fetchRandomDogs() {
+    fun fetchImageForItem(item: DogItem) {
+        // If the item already has an image, don't fetch it again
+        if (item.imageUrl != null) return
+
         viewModelScope.launch {
-            // Fetch an image for each item in the list
-            dogItems = dogItems.map { item ->
-                try {
-                    val response = dogApiService.getRandomDogImage()
-                    item.copy(imageUrl = response.message)
-                } catch (e: Exception) {
-                    Log.e("MainViewModel", "Error fetching image for ${item.name}", e)
-                    item // keep old item if fetch fails
+            try {
+                val response = dogApiService.getRandomDogImage()
+                // Update the list with the new image URL for this specific item
+                dogItems = dogItems.map {
+                    if (it.name == item.name) {
+                        it.copy(imageUrl = response.message)
+                    } else {
+                        it
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "Error fetching image for ${item.name}", e)
             }
         }
     }

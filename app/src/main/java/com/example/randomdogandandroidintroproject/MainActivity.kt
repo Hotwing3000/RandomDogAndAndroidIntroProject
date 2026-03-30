@@ -11,7 +11,9 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,10 +51,6 @@ import coil.compose.AsyncImage
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-// You can only use imports which is defined in gradle/libs.versions.toml and app/build.gradle.kts first.
-// Then Gradle handles it, by fetching the libs, and setting the dependency, so the libs can be used in code (write imports first)
-
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,14 +79,11 @@ fun MyApp(
                     ) {
                         Text(if (viewModel.isRomanMode) "Show Numeric" else "Show Roman")
                     }
-                    Button(
-                        modifier = Modifier.padding(start = 8.dp),
-                        onClick = { viewModel.fetchRandomDogs() }
-                    ) {
-                        Text("New Dogs")
-                    }
                 }
-                Greetings(dogItems = viewModel.dogItems)
+                Greetings(
+                    dogItems = viewModel.dogItems,
+                    onExpand = { item -> viewModel.fetchImageForItem(item) }
+                )
             }
         }
     }
@@ -118,17 +113,18 @@ fun OnboardingScreen(
 @Composable
 private fun Greetings(
     modifier: Modifier = Modifier,
-    dogItems: List<DogItem>
+    dogItems: List<DogItem>,
+    onExpand: (DogItem) -> Unit
 ) {
     LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
         items(items = dogItems) { item ->
-            Greeting(dogItem = item)
+            Greeting(dogItem = item, onExpand = onExpand)
         }
     }
 }
 
 @Composable
-fun Greeting(dogItem: DogItem, modifier: Modifier = Modifier) {
+fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier = Modifier) {
 
     var expanded by rememberSaveable { mutableStateOf(false) }
 
@@ -163,7 +159,14 @@ fun Greeting(dogItem: DogItem, modifier: Modifier = Modifier) {
         shape = MaterialTheme.shapes.medium,
         modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
     ) {
-        CardContent(dogItem, expanded, onExpandClicked = { expanded = !expanded })
+        CardContent(
+            dogItem = dogItem,
+            expanded = expanded,
+            onExpandClicked = {
+                expanded = !expanded
+                if (expanded) onExpand(dogItem)
+            }
+        )
     }
 }
 
@@ -189,19 +192,30 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
             ))
 
             if (expanded) {
-                AsyncImage(
-                    model = dogItem.imageUrl,
-                    contentDescription = "Random Dog Image",
-                    modifier = Modifier
-                        .padding(top = 16.dp)
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    placeholder = ColorPainter(Color.LightGray),
-                    error = ColorPainter(Color.Red),
-                    onError = { state ->
-                        Log.e("AsyncImage", "Error loading image: ${state.result.throwable}")
-                    }
-                )
+                if (dogItem.imageUrl != null) {
+                    AsyncImage(
+                        model = dogItem.imageUrl,
+                        contentDescription = "Random Dog Image",
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        placeholder = ColorPainter(Color.LightGray),
+                        error = ColorPainter(Color.Red),
+                        onError = { state ->
+                            Log.e("AsyncImage", "Error loading image: ${state.result.throwable}")
+                        }
+                    )
+                } else {
+                    // Show a local placeholder box while the URL is being fetched from the API
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
+                    )
+                }
                 Text(
                     text = ("Composem ipsum color sit lazy, padding theme elit, sed do bouncy. ").repeat(4),
                     modifier = Modifier.padding(top = 16.dp)
@@ -232,7 +246,7 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        Greetings(dogItems = listOf(DogItem("1"), DogItem("2")))
+        Greetings(dogItems = listOf(DogItem("1"), DogItem("2")), onExpand = {})
     }
 }
 
