@@ -1,5 +1,6 @@
 package com.example.randomdogandandroidintroproject
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,7 +14,8 @@ import javax.inject.Named
 @HiltViewModel
 class MainViewModel @Inject constructor(
     @Named("numeric") private val numericRepository: NameRepository,
-    @Named("roman") private val romanRepository: NameRepository
+    @Named("roman") private val romanRepository: NameRepository,
+    private val dogApiService: DogApiService
 ) : ViewModel() {
 
     var shouldShowOnboarding by mutableStateOf(true)
@@ -25,9 +27,12 @@ class MainViewModel @Inject constructor(
     var names by mutableStateOf<List<String>>(emptyList())
         private set
 
+    var dogImageUrl by mutableStateOf<String?>(null)
+        private set
+
     init {
-        // Load initial data
         loadNames()
+        fetchRandomDog()
     }
 
     fun onContinueClicked() {
@@ -36,10 +41,23 @@ class MainViewModel @Inject constructor(
 
     private fun loadNames() {
         viewModelScope.launch {
+            val amount = 3
             names = if (isRomanMode) {
-                romanRepository.getNames(amount = 100)
+                romanRepository.getNames(amount = amount)
             } else {
-                numericRepository.getNames(amount = 100)
+                numericRepository.getNames(amount = amount)
+            }
+        }
+    }
+
+    fun fetchRandomDog() {
+        viewModelScope.launch {
+            try {
+                val response = dogApiService.getRandomDogImage()
+                dogImageUrl = response.message
+                Log.d("MainViewModel", "Dog image URL: ${response.message}")
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "Error fetching dog image", e)
             }
         }
     }
