@@ -83,12 +83,12 @@ fun MyApp(
                     }
                     Button(
                         modifier = Modifier.padding(start = 8.dp),
-                        onClick = { viewModel.fetchRandomDog() }
+                        onClick = { viewModel.fetchRandomDogs() }
                     ) {
-                        Text("New Dog")
+                        Text("New Dogs")
                     }
                 }
-                Greetings(names = viewModel.names, dogImageUrl = viewModel.dogImageUrl)
+                Greetings(dogItems = viewModel.dogItems)
             }
         }
     }
@@ -118,18 +118,17 @@ fun OnboardingScreen(
 @Composable
 private fun Greetings(
     modifier: Modifier = Modifier,
-    names: List<String>,
-    dogImageUrl: String?
+    dogItems: List<DogItem>
 ) {
     LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
-        items(items = names) { name ->
-            Greeting(name = name, dogImageUrl = dogImageUrl)
+        items(items = dogItems) { item ->
+            Greeting(dogItem = item)
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, dogImageUrl: String?, modifier: Modifier = Modifier) {
+fun Greeting(dogItem: DogItem, modifier: Modifier = Modifier) {
 
     var expanded by rememberSaveable { mutableStateOf(false) }
 
@@ -144,7 +143,6 @@ fun Greeting(name: String, dogImageUrl: String?, modifier: Modifier = Modifier) 
             tween(durationMillis = 300, easing = LinearEasing)
         }
     )
-    // to animate the text color explicitly
     val contentColor by animateColorAsState(
         targetValue = if (expanded) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
         animationSpec = if (expanded) {
@@ -165,12 +163,12 @@ fun Greeting(name: String, dogImageUrl: String?, modifier: Modifier = Modifier) 
         shape = MaterialTheme.shapes.medium,
         modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
     ) {
-        CardContent(name, expanded, dogImageUrl, onExpandClicked = { expanded = !expanded })
+        CardContent(dogItem, expanded, onExpandClicked = { expanded = !expanded })
     }
 }
 
 @Composable
-private fun CardContent(name: String, expanded: Boolean, dogImageUrl: String?, onExpandClicked: () -> Unit) {
+private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: () -> Unit) {
     Row(
         modifier = Modifier
             .padding(24.dp)
@@ -186,13 +184,13 @@ private fun CardContent(name: String, expanded: Boolean, dogImageUrl: String?, o
                 .weight(1f)
         ) {
             Text(text = "Hello, ")
-            Text(text = name, style = MaterialTheme.typography.headlineMedium.copy(
+            Text(text = dogItem.name, style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.ExtraBold
             ))
 
             if (expanded) {
                 AsyncImage(
-                    model = dogImageUrl,
+                    model = dogItem.imageUrl,
                     contentDescription = "Random Dog Image",
                     modifier = Modifier
                         .padding(top = 16.dp)
@@ -234,7 +232,7 @@ private fun CardContent(name: String, expanded: Boolean, dogImageUrl: String?, o
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        Greetings(names = listOf("1", "2"), dogImageUrl = null)
+        Greetings(dogItems = listOf(DogItem("1"), DogItem("2")))
     }
 }
 

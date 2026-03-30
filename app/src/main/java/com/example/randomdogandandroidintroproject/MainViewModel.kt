@@ -11,6 +11,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Named
 
+data class DogItem(
+    val name: String,
+    val imageUrl: String? = null
+)
+
 @HiltViewModel
 class MainViewModel @Inject constructor(
     @Named("numeric") private val numericRepository: NameRepository,
@@ -24,15 +29,11 @@ class MainViewModel @Inject constructor(
     var isRomanMode by mutableStateOf(false)
         private set
 
-    var names by mutableStateOf<List<String>>(emptyList())
-        private set
-
-    var dogImageUrl by mutableStateOf<String?>(null)
+    var dogItems by mutableStateOf<List<DogItem>>(emptyList())
         private set
 
     init {
         loadNames()
-        fetchRandomDog()
     }
 
     fun onContinueClicked() {
@@ -41,23 +42,29 @@ class MainViewModel @Inject constructor(
 
     private fun loadNames() {
         viewModelScope.launch {
-            val amount = 3
-            names = if (isRomanMode) {
-                romanRepository.getNames(amount = amount)
+            val names = if (isRomanMode) {
+                romanRepository.getNames(amount = 3)
             } else {
-                numericRepository.getNames(amount = amount)
+                numericRepository.getNames(amount = 3)
             }
+            // Initialize items without images first
+            dogItems = names.map { DogItem(it) }
+            // Then fetch images for all of them
+            fetchRandomDogs()
         }
     }
 
-    fun fetchRandomDog() {
+    fun fetchRandomDogs() {
         viewModelScope.launch {
-            try {
-                val response = dogApiService.getRandomDogImage()
-                dogImageUrl = response.message
-                Log.d("MainViewModel", "Dog image URL: ${response.message}")
-            } catch (e: Exception) {
-                Log.e("MainViewModel", "Error fetching dog image", e)
+            // Fetch an image for each item in the list
+            dogItems = dogItems.map { item ->
+                try {
+                    val response = dogApiService.getRandomDogImage()
+                    item.copy(imageUrl = response.message)
+                } catch (e: Exception) {
+                    Log.e("MainViewModel", "Error fetching image for ${item.name}", e)
+                    item // keep old item if fetch fails
+                }
             }
         }
     }
