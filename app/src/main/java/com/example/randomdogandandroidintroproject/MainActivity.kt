@@ -141,7 +141,7 @@ fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier =
         targetValue = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
         animationSpec = if (expanded) {
             spring(
-                dampingRatio = Spring.DampingRatioHighBouncy,
+                dampingRatio = Spring.DampingRatioMediumBouncy,
                 stiffness = Spring.StiffnessLow
             )
         } else {
@@ -152,7 +152,7 @@ fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier =
         targetValue = if (expanded) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
         animationSpec = if (expanded) {
             spring(
-                dampingRatio = Spring.DampingRatioHighBouncy,
+                dampingRatio = Spring.DampingRatioMediumBouncy,
                 stiffness = Spring.StiffnessLow
             )
         } else {
@@ -183,7 +183,7 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
             .padding(24.dp)
             .animateContentSize(
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioHighBouncy,
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
                     stiffness = Spring.StiffnessLow
                 )
             )
@@ -221,9 +221,17 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
                             .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
                     )
                 }
+                
+                val breedText = if (dogItem.breedDisplay != null) {
+                    "This dog is a ${dogItem.breedDisplay}"
+                } else {
+                    "Identifying dog breed..."
+                }
+                
                 Text(
-                    text = ("Composem ipsum color sit lazy, padding theme elit, sed do bouncy. ").repeat(4),
-                    modifier = Modifier.padding(top = 16.dp)
+                    text = breedText,
+                    modifier = Modifier.padding(top = 16.dp),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                 )
             }
         }

@@ -10,12 +10,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Named
-
+import java.util.Locale
 
 data class DogItem(
     val index: Int, // Stable ID for the "slot"
     val name: String,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val breedDisplay: String? = null
 )
 
 @HiltViewModel
@@ -34,8 +35,8 @@ class MainViewModel @Inject constructor(
     var dogItems by mutableStateOf<List<DogItem>>(emptyList())
         private set
 
-    // Persistent cache for URLs tied to the index
-    private val imageCache = mutableMapOf<Int, String>()
+    // Persistent cache for items tied to the index
+    private val imageCache = mutableMapOf<Int, Pair<String, String>>() // imageUrl to breedDisplay
 
     init {
         loadNames()
@@ -54,16 +55,16 @@ class MainViewModel @Inject constructor(
                 numericRepository.getNames(amount = amount)
             }
             
-            // Reconstruct the list while preserving cached images
+            // Reconstruct the list while preserving cached data
             dogItems = names.mapIndexed { index, name ->
+                val cachedData = imageCache[index]
                 DogItem(
                     index = index,
                     name = name,
-                    imageUrl = imageCache[index] // Restore from cache
-
+                    imageUrl = cachedData?.first,
+                    breedDisplay = cachedData?.second
                 )
             }
-            Log.d("MainViewModel", "${imageCache.size}")
         }
     }
 
@@ -74,15 +75,18 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = dogApiService.getRandomDogImage()
-                Log.d("MainViewModel", "Fetched dog image URL for index ${item.index}: ${response.message}")
+                val url = response.message
+                val breedDisplay = extractBreedFromUrl(url)
+                
+                Log.d("MainViewModel", "Fetched dog: $breedDisplay for index ${item.index}, with url: $url")
                 
                 // 1. Save to persistent cache
-                imageCache[item.index] = response.message
+                imageCache[item.index] = Pair(url, breedDisplay)
                 
                 // 2. Update the active UI list
                 dogItems = dogItems.map {
                     if (it.index == item.index) {
-                        it.copy(imageUrl = response.message)
+                        it.copy(imageUrl = url, breedDisplay = breedDisplay)
                     } else {
                         it
                     }
@@ -90,6 +94,25 @@ class MainViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("MainViewModel", "Error fetching image for index ${item.index}", e)
             }
+        }
+    }
+
+    private fun extractBreedFromUrl(url: String): String {
+        // Example: "https://images.dog.ceo/breeds/terrier-tibetan/n02097474_494.jpg"
+        // 1. Get the part after "/breeds/"
+        val breedPart = url.substringAfter("/breeds/").substringBefore("/")
+        
+        // 2. Split by '-'
+        val parts = breedPart.split("-")
+        
+        return if (parts.size >= 2) {
+            // "terrier-tibetan" -> parts[1]="tibetan", parts[0]="terrier" -> "Tibetan Terrier"
+            val breed = parts[1].replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            val group = parts[0].replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            "$breed $group"
+        } else {
+            // "shiba" -> "Shiba"
+            breedPart.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
         }
     }
 
