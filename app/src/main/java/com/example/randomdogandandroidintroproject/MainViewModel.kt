@@ -59,6 +59,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = dogApiService.getRandomDogImage()
+                Log.d("MainViewModel", "Fetched dog image URL: ${response.message}")
                 // Update the list with the new image URL for this specific item
                 dogItems = dogItems.map {
                     if (it.name == item.name) {
