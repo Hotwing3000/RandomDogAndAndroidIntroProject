@@ -263,13 +263,32 @@ fun GreetingPreview() {
     }
 }
 
-@Preview
+@Preview(showBackground = true, widthDp = 320)
 @Composable
-fun MyAppPreview() {
+fun GreetingExpandedPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        MyApp(Modifier.fillMaxSize())
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+        ) {
+            CardContent(
+                dogItem = DogItem(
+                    index = 0,
+                    name = "I",
+                    imageUrl = "https://images.dog.ceo/breeds/terrier-tibetan/n02097474_494.jpg",
+                    breedDisplay = "Tibetan Terrier"
+                ),
+                expanded = true,
+                onExpandClicked = {}
+            )
+        }
     }
 }
+
 
 @Preview(showBackground = true, widthDp = 320, heightDp = 320)
 @Composable
