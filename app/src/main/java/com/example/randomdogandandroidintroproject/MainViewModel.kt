@@ -14,7 +14,7 @@ import java.util.Locale
 
 data class DogItem(
     val index: Int, // Stable ID for the "slot"
-    val name: String,
+    val name: String? = null,
     val imageUrl: String? = null,
     val breedDisplay: String? = null
 )
@@ -23,7 +23,8 @@ data class DogItem(
 class MainViewModel @Inject constructor(
     @Named("numeric") private val numericRepository: NameRepository,
     @Named("roman") private val romanRepository: NameRepository,
-    private val dogApiService: DogApiService
+    private val dogApiService: DogApiService,
+    private val nameApiService: NameApiService
 ) : ViewModel() {
 
     var shouldShowOnboarding by mutableStateOf(true)
@@ -35,8 +36,14 @@ class MainViewModel @Inject constructor(
     var dogItems by mutableStateOf<List<DogItem>>(emptyList())
         private set
 
+    data class DogCacheData(
+        val name: String? = null,
+        val imageUrl: String? = null,
+        val breedDisplay: String? = null
+    )
+
     // Persistent cache for items tied to the index
-    private val imageCache = mutableMapOf<Int, Pair<String, String>>() // imageUrl to breedDisplay
+    private val dogCache = mutableMapOf<Int, DogCacheData>()
 
     init {
         loadNames()
@@ -57,12 +64,12 @@ class MainViewModel @Inject constructor(
             
             // Reconstruct the list while preserving cached data
             dogItems = names.mapIndexed { index, name ->
-                val cachedData = imageCache[index]
+                val cachedData = dogCache[index]
                 DogItem(
                     index = index,
-                    name = name,
-                    imageUrl = cachedData?.first,
-                    breedDisplay = cachedData?.second
+                    name = cachedData?.name ?: name,
+                    imageUrl = cachedData?.imageUrl,
+                    breedDisplay = cachedData?.breedDisplay
                 )
             }
         }
@@ -81,8 +88,9 @@ class MainViewModel @Inject constructor(
                 Log.d("MainViewModel", "Fetched dog: $breedDisplay for index ${item.index}, with url: $url")
                 
                 // 1. Save to persistent cache
-                imageCache[item.index] = Pair(url, breedDisplay)
-                
+                val currentDogCache = dogCache[item.index] ?: DogCacheData()
+                dogCache[item.index] = currentDogCache.copy(imageUrl = url, breedDisplay = breedDisplay)
+
                 // 2. Update the active UI list
                 dogItems = dogItems.map {
                     if (it.index == item.index) {
@@ -93,6 +101,36 @@ class MainViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("MainViewModel", "Error fetching image for index ${item.index}", e)
+            }
+        }
+    }
+
+    fun fetchNameForItem(item: DogItem) {
+        // Check cache first to avoid redundant fetches if the UI list doesn't have it yet
+        if (dogCache[item.index]?.name != null) return
+
+        viewModelScope.launch {
+            try {
+                val response = nameApiService.getRandomName()
+                val fetchedName = response.results.first().name.first
+
+                Log.d("MainViewModel", "Fetched name: $fetchedName for index ${item.index}")
+
+                val currentDogCache = dogCache[item.index] ?: DogCacheData()
+                dogCache[item.index] = currentDogCache.copy(name = fetchedName)
+
+
+                // 2. Update the active UI list
+                dogItems = dogItems.map {
+                    if (it.index == item.index) {
+                        it.copy(name = fetchedName)
+                    } else {
+                        it
+                    }
+                }
+
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "Error fetching name for index ${item.index}", e)
             }
         }
     }

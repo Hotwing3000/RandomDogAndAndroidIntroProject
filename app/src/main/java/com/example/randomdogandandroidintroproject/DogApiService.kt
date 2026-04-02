@@ -9,6 +9,6 @@ data class DogResponse(
 
 interface DogApiService {
     // Hilts creates an implementation of this in NetworkModule (also adding the base URL and retrofit engine)
-    @GET("breeds/image/random")
+    @GET("api/breeds/image/random")
     suspend fun getRandomDogImage(): DogResponse
 }

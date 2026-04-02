@@ -83,7 +83,10 @@ fun MyApp(
                 }
                 Greetings(
                     dogItems = viewModel.dogItems,
-                    onExpand = { item -> viewModel.fetchImageForItem(item) }
+                    onExpand = { item -> 
+                        viewModel.fetchImageForItem(item)
+                        viewModel.fetchNameForItem(item)
+                    }
                 )
             }
         }
@@ -130,9 +133,9 @@ fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier =
     var expanded by rememberSaveable { mutableStateOf(false) }
 
     // Use LaunchedEffect to automatically fetch the image if the card is expanded
-    // and the image is currently missing (e.g. after a mode toggle).
-    LaunchedEffect(expanded, dogItem.imageUrl) {
-        if (expanded && dogItem.imageUrl == null) {
+    // and the data is currently missing (e.g. after a mode toggle).
+    LaunchedEffect(expanded, dogItem.imageUrl, dogItem.name) {
+        if (expanded) {
             onExpand(dogItem)
         }
     }
@@ -193,7 +196,7 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
                 .weight(1f)
         ) {
             Text(text = "Hello, ")
-            Text(text = dogItem.name, style = MaterialTheme.typography.headlineMedium.copy(
+            Text(text = dogItem.name ?: "Fetching name...", style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.ExtraBold
             ))
 
