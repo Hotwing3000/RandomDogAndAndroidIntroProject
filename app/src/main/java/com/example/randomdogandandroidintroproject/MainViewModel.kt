@@ -34,14 +34,14 @@ class MainViewModel @Inject constructor(
         private set
 
     init {
-        loadNames()
+        loadDogItems()
     }
 
     fun onContinueClicked() {
         shouldShowOnboarding = false
     }
 
-    private fun loadNames() {
+    private fun loadDogItems() {
         viewModelScope.launch {
             val amount = 1000
             val ids = if (isRomanMode) {
@@ -95,6 +95,6 @@ class MainViewModel @Inject constructor(
 
     fun toggleNamesMode() {
         isRomanMode = !isRomanMode
-        loadNames()
+        loadDogItems()
     }
 }
