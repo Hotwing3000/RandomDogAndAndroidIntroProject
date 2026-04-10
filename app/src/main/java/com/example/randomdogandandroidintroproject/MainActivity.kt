@@ -131,8 +131,6 @@ fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier =
 
     var expanded by rememberSaveable { mutableStateOf(false) }
 
-    // Use LaunchedEffect to automatically fetch the image if the card is expanded
-    // and the data is currently missing (e.g. after a mode toggle).
     LaunchedEffect(expanded, dogItem.imageUrl, dogItem.name) {
         if (expanded) {
             onExpand(dogItem)
@@ -194,7 +192,7 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
             modifier = Modifier
                 .weight(1f)
         ) {
-            Text(text = "Hello, ")
+            Text(text = "Dog ${dogItem.id}")
             Text(text = dogItem.name ?: "Fetching name...", style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.ExtraBold
             ))
@@ -261,7 +259,7 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        Greetings(dogItems = listOf(DogItem(0, "1"), DogItem(1, "2")), onExpand = {})
+        Greetings(dogItems = listOf(DogItem(0, "1")), onExpand = {})
     }
 }
 
@@ -280,7 +278,8 @@ fun GreetingExpandedPreview() {
             CardContent(
                 dogItem = DogItem(
                     index = 0,
-                    name = "I",
+                    id = "I",
+                    name = "Doggy",
                     imageUrl = "https://images.dog.ceo/breeds/terrier-tibetan/n02097474_494.jpg",
                     breedDisplay = "Tibetan Terrier"
                 ),

@@ -12,6 +12,7 @@ import javax.inject.Named
 
 data class DogItem(
     val index: Int, // Stable ID for the "slot"
+    val id: String, // The numeric or roman identifier
     val name: String? = null,
     val imageUrl: String? = null,
     val breedDisplay: String? = null
@@ -55,7 +56,8 @@ class MainViewModel @Inject constructor(
                 val cached = dogRepository.getCachedDetails(index)
                 DogItem(
                     index = index,
-                    name = cached?.name ?: id,
+                    id = id,
+                    name = cached?.name,
                     imageUrl = cached?.imageUrl,
                     breedDisplay = cached?.breedDisplay
                 )
