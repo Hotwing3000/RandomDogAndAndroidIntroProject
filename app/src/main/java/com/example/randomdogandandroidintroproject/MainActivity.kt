@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -16,16 +15,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -41,8 +44,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,16 +73,25 @@ fun MyApp(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel()
 ) {
-    Surface(modifier) {
+    Surface(modifier, color = MaterialTheme.colorScheme.background) {
         if (viewModel.shouldShowOnboarding) {
             OnboardingScreen(onContinueClicked = { viewModel.onContinueClicked() })
         } else {
             Column {
-                Row(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
                     Button(
-                        onClick = { viewModel.toggleNamesMode() }
+                        onClick = { viewModel.toggleNamesMode() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
                     ) {
-                        Text(if (viewModel.isRomanMode) "Show Numeric" else "Show Roman")
+                        Text(if (viewModel.isRomanMode) "Show Numeric Numeration" else "Show Roman Numeration")
                     }
                 }
                 Greetings(
@@ -103,12 +116,21 @@ fun OnboardingScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Welcome to the Basics Codelab!")
+        Text(
+            "Welcome to the Dog Discovery!",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
         Button(
             modifier = Modifier.padding(vertical = 24.dp),
-            onClick = onContinueClicked
+            onClick = onContinueClicked,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
         ) {
-            Text("Continue")
+            Text("Start Exploring")
         }
     }
 }
@@ -120,7 +142,7 @@ private fun Greetings(
     onExpand: (DogItem) -> Unit
 ) {
     LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
-        items(items = dogItems) { item ->
+        items(items = dogItems, key = { it.index }) { item ->
             Greeting(dogItem = item, onExpand = onExpand)
         }
     }
@@ -140,26 +162,26 @@ fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier =
     }
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
-        animationSpec = if (expanded) {
-            spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            )
-        } else {
-            tween(durationMillis = 300, easing = LinearEasing)
-        }
+        targetValue = when {
+            expanded -> MaterialTheme.colorScheme.primaryContainer
+            hasBeenOpened -> MaterialTheme.colorScheme.secondaryContainer
+            else -> MaterialTheme.colorScheme.surfaceContainer
+        },
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "CardBackgroundColor"
     )
+    
     val contentColor by animateColorAsState(
-        targetValue = if (expanded) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
-        animationSpec = if (expanded) {
-            spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            )
-        } else {
-            tween(durationMillis = 300, easing = LinearEasing)
-        }
+        targetValue = when {
+            expanded -> MaterialTheme.colorScheme.onPrimaryContainer
+            hasBeenOpened -> MaterialTheme.colorScheme.onSecondaryContainer
+            else -> MaterialTheme.colorScheme.onSurface
+        },
+        animationSpec = tween(durationMillis = 300),
+        label = "CardContentColor"
     )
 
     Card(
@@ -167,8 +189,11 @@ fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier =
             containerColor = backgroundColor,
             contentColor = contentColor
         ),
-        shape = MaterialTheme.shapes.medium,
-        modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (expanded) 8.dp else 2.dp
+        ),
+        shape = RoundedCornerShape(24.dp),
+        modifier = modifier.padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
         CardContent(
             dogItem = dogItem,
@@ -188,79 +213,160 @@ private fun CardContent(
 ) {
     Row(
         modifier = Modifier
-            .padding(24.dp)
+            .padding(16.dp)
             .animateContentSize(
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    dampingRatio = Spring.DampingRatioLowBouncy,
                     stiffness = Spring.StiffnessLow
                 )
-            )
+            ),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             modifier = Modifier
                 .weight(1f)
+                .padding(8.dp)
         ) {
             if (expanded) {
-                Text(
-                    text = dogItem.name?.let { "Say hello to $it" } ?: "Calling the dog...",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                )
-
-                if (dogItem.imageUrl != null) {
-                    AsyncImage(
-                        model = dogItem.imageUrl,
-                        contentDescription = "Random Dog Image",
-                        modifier = Modifier
-                            .padding(top = 16.dp)
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        placeholder = ColorPainter(Color.LightGray),
-                        error = ColorPainter(Color.Red),
-                        onError = { state ->
-                            Log.e("AsyncImage", "Error loading image: ${state.result.throwable}")
-                        }
-                    )
-                } else {
+                // Header with icon
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .padding(top = 16.dp)
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .background(Color.LightGray, shape = MaterialTheme.shapes.medium)
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Pets,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(modifier = Modifier.size(12.dp))
+                    Text(
+                        text = dogItem.name?.let { "Say hello to $it" } ?: "Calling the dog...",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     )
                 }
+
+                // Styled Image Container
+                Box(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxWidth()
+                        .aspectRatio(1.5f)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                ) {
+                    if (dogItem.imageUrl != null) {
+                        AsyncImage(
+                            model = dogItem.imageUrl,
+                            contentDescription = "Random Dog Image",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                            placeholder = ColorPainter(MaterialTheme.colorScheme.surfaceContainerHighest),
+                            error = ColorPainter(MaterialTheme.colorScheme.errorContainer),
+                            onError = { state ->
+                                Log.e("AsyncImage", "Error loading image: ${state.result.throwable}")
+                            }
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "Fetching photo...",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
                 
+                // Breed Badge
                 val breedText = if (dogItem.breedDisplay != null) {
                     dogItem.name?.let { "$it is a ${dogItem.breedDisplay}" } ?: "This dog is a ${dogItem.breedDisplay}"
                 } else {
                     "Identifying dog breed..."
                 }
                 
-                Text(
-                    text = breedText,
+                Surface(
                     modifier = Modifier.padding(top = 16.dp),
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                )
-            } else {
-                val collapsedText = if (!hasBeenOpened) {
-                    "Would you like to meet dog no. ${dogItem.id}?"
-                } else {
-                    dogItem.name?.let { "$it (Dog no. ${dogItem.id})" } ?: "No dog came?"
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = breedText,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    )
                 }
-                Text(text = collapsedText)
+            } else {
+                // Collapsed State
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Pets,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = if (hasBeenOpened) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                    )
+                    Spacer(modifier = Modifier.size(16.dp))
+                    
+                    val collapsedText = if (!hasBeenOpened) {
+                        "Would you like to meet dog no. ${dogItem.id}?"
+                    } else {
+                        dogItem.name?.let { "$it (Dog no. ${dogItem.id})" } ?: "No dog came?"
+                    }
+                    Text(
+                        text = collapsedText,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = if (hasBeenOpened) FontWeight.Bold else FontWeight.SemiBold,
+                            color = if (hasBeenOpened) {
+                                MaterialTheme.colorScheme.onSecondaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                        )
+                    )
+                }
             }
         }
-        IconButton(onClick = onExpandClicked) {
-            Icon(
-                imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                contentDescription = if (expanded) {
-                    stringResource(R.string.show_less)
-                } else {
-                    stringResource(R.string.show_more)
-                }
-            )
+        
+        if (expanded) {
+            IconButton(
+                onClick = onExpandClicked,
+                modifier = Modifier.align(Alignment.Top)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ExpandLess,
+                    contentDescription = stringResource(R.string.show_less),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        } else {
+            Button(
+                onClick = onExpandClicked,
+                modifier = Modifier.align(Alignment.CenterVertically),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (hasBeenOpened) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primary,
+                    contentColor = if (hasBeenOpened) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimary
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+            ) {
+                Text(
+                    text = if (hasBeenOpened) "Visit again" else "Call dog",
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
         }
     }
 }
@@ -280,17 +386,24 @@ fun GreetingPreview() {
     }
 }
 
+
 @Preview(showBackground = true, widthDp = 320)
+@Preview(
+    showBackground = true,
+    widthDp = 320,
+    uiMode = UI_MODE_NIGHT_YES,
+    name = "GreetingPreviewDark"
+)
 @Composable
 fun GreetingExpandedPreview() {
     RandomDogAndAndroidIntroProjectTheme {
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ),
-            shape = MaterialTheme.shapes.medium,
-            modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
         ) {
             CardContent(
                 dogItem = DogItem(
