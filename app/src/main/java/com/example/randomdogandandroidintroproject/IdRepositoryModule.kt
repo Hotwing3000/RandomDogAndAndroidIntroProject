@@ -9,19 +9,19 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class NameRepositoryModule {
+abstract class IdRepositoryModule {
 
     @Binds
     @Singleton
     @Named("numeric")
     abstract fun bindNumericRepository(
-        impl: NameRepositoryImpl
-    ): NameRepository
+        impl: IdRepositoryImpl
+    ): IdRepository
 
     @Binds
     @Singleton
     @Named("roman")
     abstract fun bindRomanRepository(
-        impl: RomanNumeralNameRepository
-    ): NameRepository
+        impl: RomanNumeralIdRepository
+    ): IdRepository
 }

@@ -4,20 +4,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-interface NameRepository {
-    suspend fun getNames(amount: Int): List<String>
+interface IdRepository {
+    suspend fun getIds(amount: Int): List<String>
 }
 
-class NameRepositoryImpl @Inject constructor() : NameRepository {
-    override suspend fun getNames(amount: Int): List<String> = withContext(Dispatchers.Default) {
+class IdRepositoryImpl @Inject constructor() : IdRepository {
+    override suspend fun getIds(amount: Int): List<String> = withContext(Dispatchers.Default) {
         List(amount) { "${it + 1}" }
     }
 }
 
-class RomanNumeralNameRepository @Inject constructor() : NameRepository {
-    override suspend fun getNames(amount: Int): List<String> = withContext(Dispatchers.Default) {
+class RomanNumeralIdRepository @Inject constructor() : IdRepository {
+    override suspend fun getIds(amount: Int): List<String> = withContext(Dispatchers.Default) {
         List(amount) { toRoman(it + 1) }
     }
+
 
     /**
      * Converts an integer to a Roman numeral string.

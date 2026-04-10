@@ -19,8 +19,8 @@ data class DogItem(
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    @Named("numeric") private val numericRepository: NameRepository,
-    @Named("roman") private val romanRepository: NameRepository,
+    @Named("numeric") private val numericRepository: IdRepository,
+    @Named("roman") private val romanRepository: IdRepository,
     private val dogRepository: DogRepository
 ) : ViewModel() {
 
@@ -44,18 +44,18 @@ class MainViewModel @Inject constructor(
     private fun loadNames() {
         viewModelScope.launch {
             val amount = 1000
-            val names = if (isRomanMode) {
-                romanRepository.getNames(amount = amount)
+            val ids = if (isRomanMode) {
+                romanRepository.getIds(amount = amount)
             } else {
-                numericRepository.getNames(amount = amount)
+                numericRepository.getIds(amount = amount)
             }
             
             // Reconstruct the list while preserving cached data from repository
-            dogItems = names.mapIndexed { index, name ->
+            dogItems = ids.mapIndexed { index, id ->
                 val cached = dogRepository.getCachedDetails(index)
                 DogItem(
                     index = index,
-                    name = cached?.name ?: name,
+                    name = cached?.name ?: id,
                     imageUrl = cached?.imageUrl,
                     breedDisplay = cached?.breedDisplay
                 )
