@@ -84,8 +84,7 @@ fun MyApp(
                 Greetings(
                     dogItems = viewModel.dogItems,
                     onExpand = { item -> 
-                        viewModel.fetchImageForItem(item)
-                        viewModel.fetchNameForItem(item)
+                        viewModel.loadDetailsForItem(item)
                     }
                 )
             }
