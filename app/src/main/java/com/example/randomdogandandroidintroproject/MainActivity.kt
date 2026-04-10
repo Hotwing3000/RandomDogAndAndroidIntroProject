@@ -130,9 +130,11 @@ private fun Greetings(
 fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier = Modifier) {
 
     var expanded by rememberSaveable { mutableStateOf(false) }
+    var hasBeenOpened by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(expanded, dogItem.imageUrl, dogItem.name) {
+    LaunchedEffect(expanded) {
         if (expanded) {
+            hasBeenOpened = true
             onExpand(dogItem)
         }
     }
@@ -171,13 +173,19 @@ fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier =
         CardContent(
             dogItem = dogItem,
             expanded = expanded,
+            hasBeenOpened = hasBeenOpened,
             onExpandClicked = { expanded = !expanded }
         )
     }
 }
 
 @Composable
-private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: () -> Unit) {
+private fun CardContent(
+    dogItem: DogItem, 
+    expanded: Boolean, 
+    hasBeenOpened: Boolean,
+    onExpandClicked: () -> Unit
+) {
     Row(
         modifier = Modifier
             .padding(24.dp)
@@ -192,12 +200,14 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
             modifier = Modifier
                 .weight(1f)
         ) {
-            Text(text = "Dog ${dogItem.id}")
-            Text(text = dogItem.name ?: "Fetching name...", style = MaterialTheme.typography.headlineMedium.copy(
-                fontWeight = FontWeight.ExtraBold
-            ))
-
             if (expanded) {
+                Text(
+                    text = dogItem.name?.let { "Say hello to $it" } ?: "Calling the dog...",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                )
+
                 if (dogItem.imageUrl != null) {
                     AsyncImage(
                         model = dogItem.imageUrl,
@@ -223,7 +233,7 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
                 }
                 
                 val breedText = if (dogItem.breedDisplay != null) {
-                    "This dog is a ${dogItem.breedDisplay}"
+                    dogItem.name?.let { "$it is a ${dogItem.breedDisplay}" } ?: "This dog is a ${dogItem.breedDisplay}"
                 } else {
                     "Identifying dog breed..."
                 }
@@ -233,6 +243,13 @@ private fun CardContent(dogItem: DogItem, expanded: Boolean, onExpandClicked: ()
                     modifier = Modifier.padding(top = 16.dp),
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                 )
+            } else {
+                val collapsedText = if (!hasBeenOpened) {
+                    "Would you like to meet dog no. ${dogItem.id}?"
+                } else {
+                    dogItem.name?.let { "$it (Dog no. ${dogItem.id})" } ?: "No dog came?"
+                }
+                Text(text = collapsedText)
             }
         }
         IconButton(onClick = onExpandClicked) {
@@ -284,6 +301,7 @@ fun GreetingExpandedPreview() {
                     breedDisplay = "Tibetan Terrier"
                 ),
                 expanded = true,
+                hasBeenOpened = true,
                 onExpandClicked = {}
             )
         }
