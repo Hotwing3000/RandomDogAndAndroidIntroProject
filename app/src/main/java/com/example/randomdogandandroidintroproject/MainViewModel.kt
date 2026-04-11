@@ -60,7 +60,8 @@ class MainViewModel @Inject constructor(
                     id = id,
                     name = cached?.name,
                     imageUrl = cached?.imageUrl,
-                    breedDisplay = cached?.breedDisplay
+                    breedDisplay = cached?.breedDisplay,
+                    isLiked = cached?.isLiked ?: false
                 )
             }
         }
@@ -83,13 +84,8 @@ class MainViewModel @Inject constructor(
     }
 
     fun onLikeClicked(item: DogItem) {
-        dogItems = dogItems.map {
-            if (it.index == item.index) {
-                it.copy(isLiked = !it.isLiked)
-            } else {
-                it
-            }
-        }
+        val updatedDetails = dogRepository.toggleLike(item.index)
+        updateItemInList(item.index, updatedDetails)
     }
 
     private fun updateItemInList(index: Int, details: DogDetails) {
@@ -98,7 +94,8 @@ class MainViewModel @Inject constructor(
                 it.copy(
                     name = details.name ?: it.name,
                     imageUrl = details.imageUrl ?: it.imageUrl,
-                    breedDisplay = details.breedDisplay ?: it.breedDisplay
+                    breedDisplay = details.breedDisplay ?: it.breedDisplay,
+                    isLiked = details.isLiked
                 )
             } else {
                 it

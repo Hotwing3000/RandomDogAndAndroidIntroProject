@@ -8,7 +8,8 @@ import javax.inject.Singleton
 data class DogDetails(
     val name: String? = null,
     val imageUrl: String? = null,
-    val breedDisplay: String? = null
+    val breedDisplay: String? = null,
+    val isLiked: Boolean = false
 )
 
 @Singleton
@@ -67,6 +68,13 @@ class DogRepository @Inject constructor(
             Log.e("DogRepository", "Error fetching name for index $index", e)
             null
         }
+    }
+
+    fun toggleLike(index: Int): DogDetails {
+        val currentDetails = dogCache[index] ?: DogDetails()
+        val updatedDetails = currentDetails.copy(isLiked = !currentDetails.isLiked)
+        dogCache[index] = updatedDetails
+        return updatedDetails
     }
 
     private fun extractBreedFromUrl(url: String): String {
