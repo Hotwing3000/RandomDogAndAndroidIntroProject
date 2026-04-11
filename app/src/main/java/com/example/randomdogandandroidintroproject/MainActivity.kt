@@ -85,8 +85,17 @@ fun MyApp(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
+                    Button(
+                        onClick = { viewModel.toggleShowOnlyLiked() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (viewModel.showOnlyLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = if (viewModel.showOnlyLiked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    ) {
+                        Text(if (viewModel.showOnlyLiked) "Show All Dogs" else "Show Liked Dogs")
+                    }
                     Button(
                         onClick = { viewModel.toggleNamesMode() },
                         colors = ButtonDefaults.buttonColors(
@@ -98,7 +107,7 @@ fun MyApp(
                     }
                 }
                 Greetings(
-                    dogItems = viewModel.dogItems,
+                    dogItems = if (viewModel.showOnlyLiked) viewModel.likedDogItems else viewModel.dogItems,
                     onExpand = { item -> 
                         viewModel.loadDetailsForItem(item)
                     },

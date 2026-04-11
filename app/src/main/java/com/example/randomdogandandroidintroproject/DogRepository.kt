@@ -19,6 +19,10 @@ class DogRepository @Inject constructor(
 ) {
     // Persistent cache for items tied to the index
     private val dogCache = mutableMapOf<Int, DogDetails>()
+    
+    // List of indices for dogs that are liked, preserving the order they were liked in
+    private val _likedIndices = mutableListOf<Int>()
+    val likedIndices: List<Int> get() = _likedIndices.toList()
 
     fun getCachedDetails(index: Int): DogDetails? {
         return dogCache[index]
@@ -72,9 +76,25 @@ class DogRepository @Inject constructor(
 
     fun toggleLike(index: Int): DogDetails {
         val currentDetails = dogCache[index] ?: DogDetails()
-        val updatedDetails = currentDetails.copy(isLiked = !currentDetails.isLiked)
+        val isNowLiked = !currentDetails.isLiked
+        val updatedDetails = currentDetails.copy(isLiked = isNowLiked)
         dogCache[index] = updatedDetails
+        
+        if (isNowLiked) {
+            if (index !in _likedIndices) {
+                _likedIndices.add(index)
+            }
+        } else {
+            _likedIndices.remove(index)
+        }
+        
         return updatedDetails
+    }
+
+    fun getLikedDogs(): List<Pair<Int, DogDetails>> {
+        return _likedIndices.mapNotNull { index ->
+            dogCache[index]?.let { index to it }
+        }
     }
 
     private fun extractBreedFromUrl(url: String): String {

@@ -32,7 +32,13 @@ class MainViewModel @Inject constructor(
     var isRomanMode by mutableStateOf(false)
         private set
 
+    var showOnlyLiked by mutableStateOf(false)
+        private set
+
     var dogItems by mutableStateOf<List<DogItem>>(emptyList())
+        private set
+
+    var likedDogItems by mutableStateOf<List<DogItem>>(emptyList())
         private set
 
     init {
@@ -64,6 +70,7 @@ class MainViewModel @Inject constructor(
                     isLiked = cached?.isLiked ?: false
                 )
             }
+            updateLikedDogsList()
         }
     }
 
@@ -101,10 +108,19 @@ class MainViewModel @Inject constructor(
                 it
             }
         }
+        updateLikedDogsList()
+    }
+
+    private fun updateLikedDogsList() {
+        likedDogItems = dogItems.filter { it.isLiked }
     }
 
     fun toggleNamesMode() {
         isRomanMode = !isRomanMode
         loadDogItems()
+    }
+
+    fun toggleShowOnlyLiked() {
+        showOnlyLiked = !showOnlyLiked
     }
 }
