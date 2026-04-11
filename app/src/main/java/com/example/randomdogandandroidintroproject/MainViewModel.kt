@@ -16,6 +16,8 @@ data class DogItem(
     val name: String? = null,
     val imageUrl: String? = null,
     val breedDisplay: String? = null,
+    val breed: String? = null,
+    val group: String? = null,
     val isLiked: Boolean = false
 )
 
@@ -33,6 +35,9 @@ class MainViewModel @Inject constructor(
         private set
 
     var showOnlyLiked by mutableStateOf(false)
+        private set
+
+    var showLikedStats by mutableStateOf(false)
         private set
 
     var dogItems by mutableStateOf<List<DogItem>>(emptyList())
@@ -67,6 +72,8 @@ class MainViewModel @Inject constructor(
                     name = cached?.name,
                     imageUrl = cached?.imageUrl,
                     breedDisplay = cached?.breedDisplay,
+                    breed = cached?.breed,
+                    group = cached?.group,
                     isLiked = cached?.isLiked ?: false
                 )
             }
@@ -102,6 +109,8 @@ class MainViewModel @Inject constructor(
                     name = details.name ?: it.name,
                     imageUrl = details.imageUrl ?: it.imageUrl,
                     breedDisplay = details.breedDisplay ?: it.breedDisplay,
+                    breed = details.breed ?: it.breed,
+                    group = details.group ?: it.group,
                     isLiked = details.isLiked
                 )
             } else {
@@ -122,5 +131,11 @@ class MainViewModel @Inject constructor(
 
     fun toggleShowOnlyLiked() {
         showOnlyLiked = !showOnlyLiked
+        if (showOnlyLiked) showLikedStats = false
+    }
+
+    fun toggleShowLikedStats() {
+        showLikedStats = !showLikedStats
+        if (showLikedStats) showOnlyLiked = false
     }
 }

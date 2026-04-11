@@ -9,6 +9,8 @@ data class DogDetails(
     val name: String? = null,
     val imageUrl: String? = null,
     val breedDisplay: String? = null,
+    val breed: String? = null,
+    val group: String? = null,
     val isLiked: Boolean = false
 )
 
@@ -36,13 +38,15 @@ class DogRepository @Inject constructor(
         return try {
             val response = dogApiService.getRandomDogImage()
             val url = response.message
-            val breedDisplay = extractBreedFromUrl(url)
+            val (breed, group, breedDisplay) = parseBreedInfo(url)
 
             Log.d("DogRepository", "Fetched dog: $breedDisplay for index $index, with url: $url")
 
             val updatedDetails = (dogCache[index] ?: DogDetails()).copy(
                 imageUrl = url,
-                breedDisplay = breedDisplay
+                breedDisplay = breedDisplay,
+                breed = breed,
+                group = group
             )
             dogCache[index] = updatedDetails
             updatedDetails
@@ -97,15 +101,22 @@ class DogRepository @Inject constructor(
         }
     }
 
-    private fun extractBreedFromUrl(url: String): String {
+    private data class BreedInfo(val breed: String, val group: String?, val display: String)
+
+    private fun parseBreedInfo(url: String): BreedInfo {
         val breedPart = url.substringAfter("/breeds/").substringBefore("/")
         val parts = breedPart.split("-")
         return if (parts.size >= 2) {
-            val breed = parts[1].replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
             val group = parts[0].replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-            "$breed $group"
+            val breed = parts[1].replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            BreedInfo(breed, group, "$breed $group")
         } else {
-            breedPart.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            val breed = breedPart.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            BreedInfo(breed, null, breed)
         }
+    }
+
+    private fun extractBreedFromUrl(url: String): String {
+        return parseBreedInfo(url).display
     }
 }

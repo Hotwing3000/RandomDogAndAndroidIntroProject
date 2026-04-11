@@ -29,19 +29,24 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,8 +57,10 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
@@ -76,6 +83,8 @@ fun MyApp(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel()
 ) {
+    var showSettingsDialog by remember { mutableStateOf(false) }
+
     Surface(modifier, color = MaterialTheme.colorScheme.background) {
         if (viewModel.shouldShowOnboarding) {
             OnboardingScreen(onContinueClicked = { viewModel.onContinueClicked() })
@@ -85,7 +94,8 @@ fun MyApp(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
                         onClick = { viewModel.toggleShowOnlyLiked() },
@@ -97,23 +107,210 @@ fun MyApp(
                         Text(if (viewModel.showOnlyLiked) "Show All Dogs" else "Show Liked Dogs")
                     }
                     Button(
-                        onClick = { viewModel.toggleNamesMode() },
+                        onClick = { viewModel.toggleShowLikedStats() },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            containerColor = if (viewModel.showLikedStats) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = if (viewModel.showLikedStats) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     ) {
-                        Text(if (viewModel.isRomanMode) "Show Numeric Numeration" else "Show Roman Numeration")
+                        Text(if (viewModel.showLikedStats) "Show All Dogs" else "Show Your Dog Stats")
+                    }
+                    IconButton(
+                        onClick = { showSettingsDialog = true }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
-                Greetings(
-                    dogItems = if (viewModel.showOnlyLiked) viewModel.likedDogItems else viewModel.dogItems,
-                    onExpand = { item -> 
-                        viewModel.loadDetailsForItem(item)
-                    },
-                    onLikeClicked = { item ->
-                        viewModel.onLikeClicked(item)
+
+                if (showSettingsDialog) {
+                    SettingsDialog(
+                        onDismiss = { showSettingsDialog = false },
+                        isRomanMode = viewModel.isRomanMode,
+                        onToggleNamesMode = { viewModel.toggleNamesMode() }
+                    )
+                }
+
+                if (viewModel.showLikedStats) {
+                    LikedStatsScreen(likedDogs = viewModel.likedDogItems)
+                } else {
+                    if (viewModel.showOnlyLiked && viewModel.likedDogItems.isEmpty()) {
+                        EmptyLikedDogsMessage()
+                    } else {
+                        Greetings(
+                            dogItems = if (viewModel.showOnlyLiked) viewModel.likedDogItems else viewModel.dogItems,
+                            onExpand = { item -> 
+                                viewModel.loadDetailsForItem(item)
+                            },
+                            onLikeClicked = { item ->
+                                viewModel.onLikeClicked(item)
+                            }
+                        )
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EmptyLikedDogsMessage() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "You have not liked any dogs yet.\n\nThey must feel abandoned :(\n\nGo back, try to call on a dog and like it using the heart icon <3",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun SettingsDialog(
+    onDismiss: () -> Unit,
+    isRomanMode: Boolean,
+    onToggleNamesMode: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Settings") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("App Preferences")
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onToggleNamesMode,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Text(if (isRomanMode) "Show Numeric Numeration" else "Show Roman Numeration")
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+@Composable
+fun LikedStatsScreen(likedDogs: List<DogItem>) {
+    val likedBreeds = likedDogs.mapNotNull { it.breed }.distinct().sorted()
+    val likedGroups = likedDogs.mapNotNull { it.group }.distinct().sorted()
+    
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(
+                text = "Dog Stats",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+        
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Total Liked Dogs",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = "${likedDogs.size}",
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+        }
+        
+        item {
+            Text(
+                text = "Liked Breeds",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            
+            if (likedBreeds.isEmpty()) {
+                Text(
+                    text = "No breeds identified yet.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        items(likedBreeds) { breed ->
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = breed,
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(
+                text = "Liked Groups",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            
+            if (likedGroups.isEmpty()) {
+                Text(
+                    text = "No groups identified yet.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        items(likedGroups) { group ->
+            Surface(
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = group,
+                    modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
         }
