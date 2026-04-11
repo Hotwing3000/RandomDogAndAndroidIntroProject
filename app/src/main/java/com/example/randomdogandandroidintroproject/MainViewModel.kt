@@ -15,7 +15,8 @@ data class DogItem(
     val id: String, // The numeric or roman identifier
     val name: String? = null,
     val imageUrl: String? = null,
-    val breedDisplay: String? = null
+    val breedDisplay: String? = null,
+    val isLiked: Boolean = false
 )
 
 @HiltViewModel
@@ -77,6 +78,16 @@ class MainViewModel @Inject constructor(
                 dogRepository.fetchName(item.index)?.let { details ->
                     updateItemInList(item.index, details)
                 }
+            }
+        }
+    }
+
+    fun onLikeClicked(item: DogItem) {
+        dogItems = dogItems.map {
+            if (it.index == item.index) {
+                it.copy(isLiked = !it.isLiked)
+            } else {
+                it
             }
         }
     }

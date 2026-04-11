@@ -26,6 +26,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -45,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -98,6 +101,9 @@ fun MyApp(
                     dogItems = viewModel.dogItems,
                     onExpand = { item -> 
                         viewModel.loadDetailsForItem(item)
+                    },
+                    onLikeClicked = { item ->
+                        viewModel.onLikeClicked(item)
                     }
                 )
             }
@@ -139,17 +145,23 @@ fun OnboardingScreen(
 private fun Greetings(
     modifier: Modifier = Modifier,
     dogItems: List<DogItem>,
-    onExpand: (DogItem) -> Unit
+    onExpand: (DogItem) -> Unit,
+    onLikeClicked: (DogItem) -> Unit
 ) {
     LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
         items(items = dogItems, key = { it.index }) { item ->
-            Greeting(dogItem = item, onExpand = onExpand)
+            Greeting(dogItem = item, onExpand = onExpand, onLikeClicked = onLikeClicked)
         }
     }
 }
 
 @Composable
-fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier = Modifier) {
+fun Greeting(
+    dogItem: DogItem, 
+    onExpand: (DogItem) -> Unit, 
+    onLikeClicked: (DogItem) -> Unit,
+    modifier: Modifier = Modifier
+) {
 
     var expanded by rememberSaveable { mutableStateOf(false) }
     var hasBeenOpened by rememberSaveable { mutableStateOf(false) }
@@ -199,7 +211,8 @@ fun Greeting(dogItem: DogItem, onExpand: (DogItem) -> Unit, modifier: Modifier =
             dogItem = dogItem,
             expanded = expanded,
             hasBeenOpened = hasBeenOpened,
-            onExpandClicked = { expanded = !expanded }
+            onExpandClicked = { expanded = !expanded },
+            onLikeClicked = { onLikeClicked(dogItem) }
         )
     }
 }
@@ -209,7 +222,8 @@ private fun CardContent(
     dogItem: DogItem, 
     expanded: Boolean, 
     hasBeenOpened: Boolean,
-    onExpandClicked: () -> Unit
+    onExpandClicked: () -> Unit,
+    onLikeClicked: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -340,32 +354,44 @@ private fun CardContent(
             }
         }
         
-        if (expanded) {
-            IconButton(
-                onClick = onExpandClicked,
-                modifier = Modifier.align(Alignment.Top)
-            ) {
+        // Heart Icon and Expand/Call Button
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            IconButton(onClick = onLikeClicked) {
                 Icon(
-                    imageVector = Icons.Filled.ExpandLess,
-                    contentDescription = stringResource(R.string.show_less),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    imageVector = if (dogItem.isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = "Like dog",
+                    tint = if (dogItem.isLiked) Color.Red else MaterialTheme.colorScheme.outline
                 )
             }
-        } else {
-            Button(
-                onClick = onExpandClicked,
-                modifier = Modifier.align(Alignment.CenterVertically),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (hasBeenOpened) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primary,
-                    contentColor = if (hasBeenOpened) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimary
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
-            ) {
-                Text(
-                    text = if (hasBeenOpened) "Visit again" else "Call dog",
-                    fontWeight = FontWeight.ExtraBold
-                )
+            
+            if (expanded) {
+                IconButton(
+                    onClick = onExpandClicked
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ExpandLess,
+                        contentDescription = stringResource(R.string.show_less),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            } else {
+                Button(
+                    onClick = onExpandClicked,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (hasBeenOpened) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primary,
+                        contentColor = if (hasBeenOpened) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimary
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                ) {
+                    Text(
+                        text = if (hasBeenOpened) "Visit" else "Call",
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
             }
         }
     }
@@ -382,7 +408,7 @@ private fun CardContent(
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        Greetings(dogItems = listOf(DogItem(0, "1")), onExpand = {})
+        Greetings(dogItems = listOf(DogItem(0, "1")), onExpand = {}, onLikeClicked = {})
     }
 }
 
@@ -415,7 +441,8 @@ fun GreetingExpandedPreview() {
                 ),
                 expanded = true,
                 hasBeenOpened = true,
-                onExpandClicked = {}
+                onExpandClicked = {},
+                onLikeClicked = {}
             )
         }
     }
