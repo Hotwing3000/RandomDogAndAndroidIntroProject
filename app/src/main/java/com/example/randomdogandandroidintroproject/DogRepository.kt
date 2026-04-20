@@ -11,7 +11,8 @@ data class DogDetails(
     val breedDisplay: String? = null,
     val breed: String? = null,
     val group: String? = null,
-    val isLiked: Boolean = false
+    val isLiked: Boolean = false,
+    val hasBeenOpened: Boolean = false
 )
 
 @Singleton
@@ -92,6 +93,13 @@ class DogRepository @Inject constructor(
             _likedIndices.remove(index)
         }
         
+        return updatedDetails
+    }
+
+    fun markAsOpened(index: Int): DogDetails {
+        val currentDetails = dogCache[index] ?: DogDetails()
+        val updatedDetails = currentDetails.copy(hasBeenOpened = true)
+        dogCache[index] = updatedDetails
         return updatedDetails
     }
 

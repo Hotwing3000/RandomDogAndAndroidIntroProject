@@ -152,8 +152,8 @@ fun DogDiscoveryScreen(
             } else {
                 Greetings(
                     dogItems = if (viewModel.showOnlyLiked) viewModel.likedDogItems else viewModel.dogItems,
-                    onExpand = { item -> 
-                        viewModel.loadDetailsForItem(item)
+                    onToggleExpand = { item -> 
+                        viewModel.toggleExpanded(item)
                     },
                     onLikeClicked = { item ->
                         viewModel.onLikeClicked(item)
@@ -391,12 +391,12 @@ fun OnboardingScreen(
 private fun Greetings(
     modifier: Modifier = Modifier,
     dogItems: List<DogItem>,
-    onExpand: (DogItem) -> Unit,
+    onToggleExpand: (DogItem) -> Unit,
     onLikeClicked: (DogItem) -> Unit
 ) {
     LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
         items(items = dogItems, key = { it.index }) { item ->
-            Greeting(dogItem = item, onExpand = onExpand, onLikeClicked = onLikeClicked)
+            Greeting(dogItem = item, onToggleExpand = onToggleExpand, onLikeClicked = onLikeClicked)
         }
     }
 }
@@ -404,25 +404,14 @@ private fun Greetings(
 @Composable
 fun Greeting(
     dogItem: DogItem, 
-    onExpand: (DogItem) -> Unit, 
+    onToggleExpand: (DogItem) -> Unit, 
     onLikeClicked: (DogItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
-    var expanded by rememberSaveable { mutableStateOf(false) }
-    var hasBeenOpened by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(expanded) {
-        if (expanded) {
-            hasBeenOpened = true
-            onExpand(dogItem)
-        }
-    }
-
     val backgroundColor by animateColorAsState(
         targetValue = when {
-            expanded -> MaterialTheme.colorScheme.primaryContainer
-            hasBeenOpened -> MaterialTheme.colorScheme.secondaryContainer
+            dogItem.isExpanded -> MaterialTheme.colorScheme.primaryContainer
+            dogItem.hasBeenOpened -> MaterialTheme.colorScheme.secondaryContainer
             else -> MaterialTheme.colorScheme.surfaceContainer
         },
         animationSpec = spring(
@@ -434,8 +423,8 @@ fun Greeting(
     
     val contentColor by animateColorAsState(
         targetValue = when {
-            expanded -> MaterialTheme.colorScheme.onPrimaryContainer
-            hasBeenOpened -> MaterialTheme.colorScheme.onSecondaryContainer
+            dogItem.isExpanded -> MaterialTheme.colorScheme.onPrimaryContainer
+            dogItem.hasBeenOpened -> MaterialTheme.colorScheme.onSecondaryContainer
             else -> MaterialTheme.colorScheme.onSurface
         },
         animationSpec = tween(durationMillis = 300),
@@ -448,16 +437,14 @@ fun Greeting(
             contentColor = contentColor
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (expanded) 8.dp else 2.dp
+            defaultElevation = if (dogItem.isExpanded) 8.dp else 2.dp
         ),
         shape = RoundedCornerShape(24.dp),
         modifier = modifier.padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
         CardContent(
             dogItem = dogItem,
-            expanded = expanded,
-            hasBeenOpened = hasBeenOpened,
-            onExpandClicked = { expanded = !expanded },
+            onExpandClicked = { onToggleExpand(dogItem) },
             onLikeClicked = { onLikeClicked(dogItem) }
         )
     }
@@ -466,8 +453,6 @@ fun Greeting(
 @Composable
 private fun CardContent(
     dogItem: DogItem, 
-    expanded: Boolean, 
-    hasBeenOpened: Boolean,
     onExpandClicked: () -> Unit,
     onLikeClicked: () -> Unit
 ) {
@@ -487,7 +472,7 @@ private fun CardContent(
                 .weight(1f)
                 .padding(8.dp)
         ) {
-            if (expanded) {
+            if (dogItem.isExpanded) {
                 // Header with icon
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
@@ -576,11 +561,11 @@ private fun CardContent(
                         imageVector = Icons.Default.Pets,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = if (hasBeenOpened) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                        tint = if (dogItem.hasBeenOpened) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
                     )
                     Spacer(modifier = Modifier.size(16.dp))
                     
-                    val collapsedText = if (!hasBeenOpened) {
+                    val collapsedText = if (!dogItem.hasBeenOpened) {
                         "Would you like to meet dog no. ${dogItem.id}?"
                     } else {
                         dogItem.name?.let { "$it (Dog no. ${dogItem.id})" } ?: "No dog came?"
@@ -588,8 +573,8 @@ private fun CardContent(
                     Text(
                         text = collapsedText,
                         style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = if (hasBeenOpened) FontWeight.Bold else FontWeight.SemiBold,
-                            color = if (hasBeenOpened) {
+                            fontWeight = if (dogItem.hasBeenOpened) FontWeight.Bold else FontWeight.SemiBold,
+                            color = if (dogItem.hasBeenOpened) {
                                 MaterialTheme.colorScheme.onSecondaryContainer
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -605,7 +590,7 @@ private fun CardContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (hasBeenOpened || expanded) {
+            if (dogItem.hasBeenOpened || dogItem.isExpanded) {
                 IconButton(onClick = onLikeClicked) {
                     Icon(
                         imageVector = if (dogItem.isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
@@ -615,7 +600,7 @@ private fun CardContent(
                 }
             }
             
-            if (expanded) {
+            if (dogItem.isExpanded) {
                 IconButton(
                     onClick = onExpandClicked
                 ) {
@@ -630,13 +615,13 @@ private fun CardContent(
                     onClick = onExpandClicked,
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (hasBeenOpened) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primary,
-                        contentColor = if (hasBeenOpened) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimary
+                        containerColor = if (dogItem.hasBeenOpened) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primary,
+                        contentColor = if (dogItem.hasBeenOpened) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimary
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                 ) {
                     Text(
-                        text = if (hasBeenOpened) "Visit" else "Call",
+                        text = if (dogItem.hasBeenOpened) "Visit" else "Call",
                         fontWeight = FontWeight.ExtraBold
                     )
                 }
@@ -656,7 +641,7 @@ private fun CardContent(
 @Composable
 fun GreetingPreview() {
     RandomDogAndAndroidIntroProjectTheme {
-        Greetings(dogItems = listOf(DogItem(0, "1")), onExpand = {}, onLikeClicked = {})
+        Greetings(dogItems = listOf(DogItem(0, "1")), onToggleExpand = {}, onLikeClicked = {})
     }
 }
 
@@ -685,10 +670,10 @@ fun GreetingExpandedPreview() {
                     id = "I",
                     name = "Doggy",
                     imageUrl = "https://images.dog.ceo/breeds/terrier-tibetan/n02097474_494.jpg",
-                    breedDisplay = "Tibetan Terrier"
+                    breedDisplay = "Tibetan Terrier",
+                    isExpanded = true,
+                    hasBeenOpened = true
                 ),
-                expanded = true,
-                hasBeenOpened = true,
                 onExpandClicked = {},
                 onLikeClicked = {}
             )

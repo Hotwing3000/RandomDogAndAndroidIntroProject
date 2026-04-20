@@ -18,7 +18,9 @@ data class DogItem(
     val breedDisplay: String? = null,
     val breed: String? = null,
     val group: String? = null,
-    val isLiked: Boolean = false
+    val isLiked: Boolean = false,
+    val hasBeenOpened: Boolean = false,
+    val isExpanded: Boolean = false
 )
 
 @HiltViewModel
@@ -74,14 +76,30 @@ class MainViewModel @Inject constructor(
                     breedDisplay = cached?.breedDisplay,
                     breed = cached?.breed,
                     group = cached?.group,
-                    isLiked = cached?.isLiked ?: false
+                    isLiked = cached?.isLiked ?: false,
+                    hasBeenOpened = cached?.hasBeenOpened ?: false,
+                    isExpanded = false // Reset expanded on mode toggle for simplicity, or preserve if needed
                 )
             }
             updateLikedDogsList()
         }
     }
 
-    fun loadDetailsForItem(item: DogItem) {
+    fun toggleExpanded(item: DogItem) {
+        val newExpandedState = !item.isExpanded
+        if (newExpandedState) {
+            // Mark as opened in repository when expanding
+            val updatedDetails = dogRepository.markAsOpened(item.index)
+            updateItemInList(item.index, updatedDetails, forceExpanded = true)
+            
+            // Trigger data load
+            loadDetailsForItem(item)
+        } else {
+            updateItemInList(item.index, details = null, forceExpanded = false)
+        }
+    }
+
+    private fun loadDetailsForItem(item: DogItem) {
         viewModelScope.launch {
             // Fetch both in parallel
             launch {
@@ -102,16 +120,18 @@ class MainViewModel @Inject constructor(
         updateItemInList(item.index, updatedDetails)
     }
 
-    private fun updateItemInList(index: Int, details: DogDetails) {
+    private fun updateItemInList(index: Int, details: DogDetails?, forceExpanded: Boolean? = null) {
         dogItems = dogItems.map {
             if (it.index == index) {
                 it.copy(
-                    name = details.name ?: it.name,
-                    imageUrl = details.imageUrl ?: it.imageUrl,
-                    breedDisplay = details.breedDisplay ?: it.breedDisplay,
-                    breed = details.breed ?: it.breed,
-                    group = details.group ?: it.group,
-                    isLiked = details.isLiked
+                    name = details?.name ?: it.name,
+                    imageUrl = details?.imageUrl ?: it.imageUrl,
+                    breedDisplay = details?.breedDisplay ?: it.breedDisplay,
+                    breed = details?.breed ?: it.breed,
+                    group = details?.group ?: it.group,
+                    isLiked = details?.isLiked ?: it.isLiked,
+                    hasBeenOpened = details?.hasBeenOpened ?: it.hasBeenOpened,
+                    isExpanded = forceExpanded ?: it.isExpanded
                 )
             } else {
                 it
