@@ -83,74 +83,82 @@ fun MyApp(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel()
 ) {
-    var showSettingsDialog by remember { mutableStateOf(false) }
-
     Surface(modifier, color = MaterialTheme.colorScheme.background) {
         if (viewModel.shouldShowOnboarding) {
             OnboardingScreen(onContinueClicked = { viewModel.onContinueClicked() })
         } else {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(
-                        onClick = { viewModel.toggleShowOnlyLiked() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (viewModel.showOnlyLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = if (viewModel.showOnlyLiked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    ) {
-                        Text(if (viewModel.showOnlyLiked) "Show All Dogs" else "Show Liked Dogs")
-                    }
-                    Button(
-                        onClick = { viewModel.toggleShowLikedStats() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (viewModel.showLikedStats) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = if (viewModel.showLikedStats) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    ) {
-                        Text(if (viewModel.showLikedStats) "Show All Dogs" else "Show Your Dog Stats")
-                    }
-                    IconButton(
-                        onClick = { showSettingsDialog = true }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+            DogDiscoveryScreen(viewModel = viewModel)
+        }
+    }
+}
 
-                if (showSettingsDialog) {
-                    SettingsDialog(
-                        onDismiss = { showSettingsDialog = false },
-                        isRomanMode = viewModel.isRomanMode,
-                        onToggleNamesMode = { viewModel.toggleNamesMode() }
-                    )
-                }
+@Composable
+fun DogDiscoveryScreen(
+    viewModel: MainViewModel,
+    modifier: Modifier = Modifier
+) {
+    var showSettingsDialog by remember { mutableStateOf(false) }
 
-                if (viewModel.showLikedStats) {
-                    LikedStatsScreen(likedDogs = viewModel.likedDogItems)
-                } else {
-                    if (viewModel.showOnlyLiked && viewModel.likedDogItems.isEmpty()) {
-                        EmptyLikedDogsMessage()
-                    } else {
-                        Greetings(
-                            dogItems = if (viewModel.showOnlyLiked) viewModel.likedDogItems else viewModel.dogItems,
-                            onExpand = { item -> 
-                                viewModel.loadDetailsForItem(item)
-                            },
-                            onLikeClicked = { item ->
-                                viewModel.onLikeClicked(item)
-                            }
-                        )
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(
+                onClick = { viewModel.toggleShowOnlyLiked() },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (viewModel.showOnlyLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = if (viewModel.showOnlyLiked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            ) {
+                Text(if (viewModel.showOnlyLiked) "Show All Dogs" else "Show Liked Dogs")
+            }
+            Button(
+                onClick = { viewModel.toggleShowLikedStats() },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (viewModel.showLikedStats) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = if (viewModel.showLikedStats) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            ) {
+                Text(if (viewModel.showLikedStats) "Show All Dogs" else "Show Your Dog Stats")
+            }
+            IconButton(
+                onClick = { showSettingsDialog = true }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        if (showSettingsDialog) {
+            SettingsDialog(
+                onDismiss = { showSettingsDialog = false },
+                isRomanMode = viewModel.isRomanMode,
+                onToggleNamesMode = { viewModel.toggleNamesMode() }
+            )
+        }
+
+        if (viewModel.showLikedStats) {
+            LikedStatsScreen(likedDogs = viewModel.likedDogItems)
+        } else {
+            if (viewModel.showOnlyLiked && viewModel.likedDogItems.isEmpty()) {
+                EmptyLikedDogsMessage()
+            } else {
+                Greetings(
+                    dogItems = if (viewModel.showOnlyLiked) viewModel.likedDogItems else viewModel.dogItems,
+                    onExpand = { item -> 
+                        viewModel.loadDetailsForItem(item)
+                    },
+                    onLikeClicked = { item ->
+                        viewModel.onLikeClicked(item)
                     }
-                }
+                )
             }
         }
     }
