@@ -208,8 +208,8 @@ fun SettingsDialog(
 
 @Composable
 fun LikedStatsScreen(likedDogs: List<DogItem>) {
-    val likedBreeds = likedDogs.mapNotNull { it.breed }.distinct().sorted()
-    val likedGroups = likedDogs.mapNotNull { it.group }.distinct().sorted()
+    val breedCounts = likedDogs.mapNotNull { it.breed }.groupingBy { it }.eachCount().toList().sortedByDescending { it.second }
+    val groupCounts = likedDogs.mapNotNull { it.group }.groupingBy { it }.eachCount().toList().sortedByDescending { it.second }
     
     LazyColumn(
         modifier = Modifier
@@ -250,68 +250,100 @@ fun LikedStatsScreen(likedDogs: List<DogItem>) {
         }
         
         item {
-            Text(
-                text = "Liked Breeds",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            
-            if (likedBreeds.isEmpty()) {
-                Text(
-                    text = "No breeds identified yet.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        items(likedBreeds) { breed ->
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = breed,
-                    modifier = Modifier.padding(12.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
+                // Column for Liked Breeds
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Breeds",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    
+                    if (breedCounts.isEmpty()) {
+                        Text(
+                            text = "None yet.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        breedCounts.forEach { (breed, count) ->
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = breed,
+                                        modifier = Modifier.weight(1f),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Text(
+                                        text = "$count",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
 
-        item {
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                text = "Liked Groups",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            
-            if (likedGroups.isEmpty()) {
-                Text(
-                    text = "No groups identified yet.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        items(likedGroups) { group ->
-            Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = group,
-                    modifier = Modifier.padding(12.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                // Column for Liked Groups
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Groups",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                    
+                    if (groupCounts.isEmpty()) {
+                        Text(
+                            text = "None yet.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        groupCounts.forEach { (group, count) ->
+                            Surface(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = group,
+                                        modifier = Modifier.weight(1f),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = "$count",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -565,12 +597,14 @@ private fun CardContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            IconButton(onClick = onLikeClicked) {
-                Icon(
-                    imageVector = if (dogItem.isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    contentDescription = "Like dog",
-                    tint = if (dogItem.isLiked) Color.Red else MaterialTheme.colorScheme.outline
-                )
+            if (hasBeenOpened || expanded) {
+                IconButton(onClick = onLikeClicked) {
+                    Icon(
+                        imageVector = if (dogItem.isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = "Like dog",
+                        tint = if (dogItem.isLiked) Color.Red else MaterialTheme.colorScheme.outline
+                    )
+                }
             }
             
             if (expanded) {
