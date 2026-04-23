@@ -4,16 +4,35 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+/**
+ * Interface for a repository that generates unique identifiers for dog entries.
+ */
 interface IdRepository {
+    /**
+     * Generates a list of string identifiers.
+     *
+     * @param amount The number of IDs to generate.
+     * @return A list of unique string IDs.
+     */
     suspend fun getIds(amount: Int): List<String>
 }
 
+/**
+ * An implementation of [IdRepository] that generates simple numeric identifiers (e.g., "1", "2", "3").
+ *
+ * It uses [Dispatchers.Default] to ensure the generation logic doesn't block the calling thread.
+ */
 class IdRepositoryImpl @Inject constructor() : IdRepository {
     override suspend fun getIds(amount: Int): List<String> = withContext(Dispatchers.Default) {
         List(amount) { "${it + 1}" }
     }
 }
 
+/**
+ * An implementation of [IdRepository] that generates identifiers in Roman numeral format (e.g., "I", "II", "III").
+ *
+ * It uses [Dispatchers.Default] to ensure the conversion logic doesn't block the calling thread.
+ */
 class RomanNumeralIdRepository @Inject constructor() : IdRepository {
     override suspend fun getIds(amount: Int): List<String> = withContext(Dispatchers.Default) {
         List(amount) { toRoman(it + 1) }

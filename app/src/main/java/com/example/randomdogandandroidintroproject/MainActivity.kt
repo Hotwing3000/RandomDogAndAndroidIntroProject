@@ -66,6 +66,10 @@ import coil.compose.AsyncImage
 import com.example.randomdogandandroidintroproject.ui.theme.RandomDogAndAndroidIntroProjectTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Main entry point for the Dog Discovery application.
+ * This activity sets up the Compose UI and uses Hilt for dependency injection.
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,6 +82,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Top-level Composable that manages the high-level state of the app,
+ * switching between the Onboarding screen and the main Dog Discovery screen.
+ *
+ * @param viewModel The shared [MainViewModel] instance.
+ */
 @Composable
 fun MyApp(
     modifier: Modifier = Modifier,
@@ -92,6 +102,10 @@ fun MyApp(
     }
 }
 
+/**
+ * The primary screen of the application where users can discover dogs,
+ * filter for liked dogs, view statistics, and access settings.
+ */
 @Composable
 fun DogDiscoveryScreen(
     viewModel: MainViewModel,
@@ -164,6 +178,9 @@ fun DogDiscoveryScreen(
     }
 }
 
+/**
+ * Centered message shown when the user filters for liked dogs but has not liked any yet.
+ */
 @Composable
 fun EmptyLikedDogsMessage() {
     Box(
@@ -182,6 +199,9 @@ fun EmptyLikedDogsMessage() {
     }
 }
 
+/**
+ * A dialog allowing users to toggle application preferences, such as the numbering mode.
+ */
 @Composable
 fun SettingsDialog(
     onDismiss: () -> Unit,
@@ -214,6 +234,10 @@ fun SettingsDialog(
     )
 }
 
+/**
+ * A screen that displays statistics about the dogs the user has liked,
+ * including total count and a breakdown by breed and group.
+ */
 @Composable
 fun LikedStatsScreen(likedDogs: List<DogItem>) {
     val breedCounts = likedDogs.mapNotNull { it.breed }.groupingBy { it }.eachCount().toList().sortedByDescending { it.second }
@@ -357,6 +381,9 @@ fun LikedStatsScreen(likedDogs: List<DogItem>) {
     }
 }
 
+/**
+ * Screen displayed when the app is first launched, providing an introduction to the user.
+ */
 @Composable
 fun OnboardingScreen(
     onContinueClicked: () -> Unit,
@@ -387,6 +414,9 @@ fun OnboardingScreen(
     }
 }
 
+/**
+ * A scrollable list of dog items. Uses [LazyColumn] for efficient rendering.
+ */
 @Composable
 private fun Greetings(
     modifier: Modifier = Modifier,
@@ -401,6 +431,10 @@ private fun Greetings(
     }
 }
 
+/**
+ * An individual dog card that can be in a collapsed or expanded state.
+ * It animates its size and colors based on whether it has been opened or expanded.
+ */
 @Composable
 fun Greeting(
     dogItem: DogItem, 
@@ -450,6 +484,11 @@ fun Greeting(
     }
 }
 
+/**
+ * The content within a [Greeting] card. 
+ * - Collapsed: Shows a simple "Call" prompt or the dog's name if already visited.
+ * - Expanded: Shows the dog's name, a random image fetched from the API, and its breed.
+ */
 @Composable
 private fun CardContent(
     dogItem: DogItem, 
